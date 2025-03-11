@@ -10,6 +10,7 @@
   import authRoutes from "./routes/auth.js";
   import postRoutes from "./routes/post.js";
   import streamRoutes from "./functions/stream.js";
+  import userRoutes from "./routes/user.js";
   import { createPost } from "./controllers/post.js";
   import { createShop } from "./controllers/shop.js";
   import { authenticate } from "./middlewares/authMiddleware.js";
@@ -24,6 +25,10 @@
   app.use(morgan("common"));
   app.use(cors());
   app.use("/public", express.static("public"));
+
+  // If you're behind a proxy, this will tell Express to use the X-Forwarded-For header.
+  app.set('trust proxy', true);
+
 
   // FILE STORAGE
   const storage = multer.diskStorage({
@@ -61,6 +66,7 @@
   app.use("/auth", authRoutes);
   app.use("/posts", postRoutes);
   app.use("/stream", streamRoutes);
+  app.use("/users", userRoutes);
 
   // ERROR HANDLING (optional but recommended)
   app.use((err, req, res, next) => {
