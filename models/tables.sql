@@ -74,6 +74,19 @@ CREATE TABLE Follow (
     INDEX idx_follow_shopId (shopId)
 ) ENGINE=InnoDB;
 
+--@block Create Comment table
+CREATE TABLE Comment (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT NOT NULL,
+    postId INT NOT NULL,
+    comment TEXT NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (postId) REFERENCES Post(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
 
 --@block insert into User table
 INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123', '1234567890', 'admin');

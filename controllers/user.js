@@ -2,7 +2,6 @@ import pool from "../config/pool.js";
 
 // CREATE
 
-
 // READ
 export const getUserFeed = async (req, res) => {
   try {
@@ -16,7 +15,7 @@ export const getUserFeed = async (req, res) => {
     let lng = req.query.lng ? parseFloat(req.query.lng) : null;
     const radius = 20000; // 20 km in meters
 
-    if (!lat || ! lng) {
+    if (!lat || !lng) {
       // find location via ip
       lat = 0;
       lng = 0;
@@ -28,8 +27,9 @@ export const getUserFeed = async (req, res) => {
 
     // --- Part 1: Posts from shops followed by the user ---
     queries.push(`
-      SELECT p.*, 'followed' AS source
+      SELECT p.*, s.name AS shopName, s.type AS shopType, (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'followed' AS source
       FROM Post p
+      JOIN Shop s ON p.shopId = s.id
       JOIN Follow f ON p.shopId = f.shopId
       WHERE f.userId = ?
     `);
@@ -38,7 +38,7 @@ export const getUserFeed = async (req, res) => {
     // --- Part 2: Posts from nearby shops (if location is provided) ---
     if (lat !== null && lng !== null) {
       queries.push(`
-        SELECT p.*, 'nearby' AS source
+        SELECT p.*, s.name AS shopName, s.type AS shopType, (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'nearby' AS source
         FROM Post p
         JOIN Shop s ON p.shopId = s.id
         WHERE ST_Distance_Sphere(s.location, POINT(?, ?)) < ?
@@ -49,8 +49,9 @@ export const getUserFeed = async (req, res) => {
 
     // --- Part 3: Recent posts (all posts, as a fallback) ---
     queries.push(`
-      SELECT p.*, 'recent' AS source
+      SELECT p.*, s.name AS shopName, s.type AS shopType, (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'recent' AS source
       FROM Post p
+      JOIN Shop s ON p.shopId = s.id
     `);
 
     // Combine the queries using UNION. (Duplicates may occur, so you might need to handle them if necessary.)
@@ -69,9 +70,8 @@ export const getUserFeed = async (req, res) => {
     const [rows] = await pool.query(finalQuery, params);
 
     res.status(200).json(rows);
-
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
   }
-}
+};
