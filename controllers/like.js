@@ -7,7 +7,7 @@ export const addLike = async (req, res) => {
     const { postId } = req.body;
 
     const [rows] = await pool.query(
-      `INSERT INTO likes (user_id, post_id) VALUES (?, ?)`,
+      `INSERT INTO \`Like\` (user_id, post_id) VALUES (?, ?)`,
       [userId, postId]
     );
   } catch (err) {
@@ -22,7 +22,7 @@ export const getLikesCount = async (req, res) => {
     const postId = req.params.id;
 
     const [rows] = await pool.query(
-      `SELECT COUNT(*) as count FROM likes WHERE post_id = ?`,
+      `SELECT COUNT(*) as count FROM \`Like\` WHERE post_id = ?`,
       [postId]
     );
 
@@ -40,7 +40,7 @@ export const removeLike = async (req, res) => {
     const { postId } = req.body;
 
     const [rows] = await pool.query(
-      `DELETE FROM likes WHERE userId = ? AND postId = ?`,
+      `DELETE FROM \`Like\` WHERE userId = ? AND postId = ?`,
       [userId, postId]
     );
   } catch (err) {

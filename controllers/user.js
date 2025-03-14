@@ -111,7 +111,7 @@ export const getUserLikes = async (req, res) => {
     const userId = req.params.id;
 
     const [rows] = await pool.query(`
-      SELECT l.postId As postId, p.* FROM Likes l
+      SELECT l.postId As postId, p.* FROM \`Like\` l
       JOIN Post p ON l.postId = p.id
       WHERE l.userId = ?
     `, [userId]);
