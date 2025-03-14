@@ -27,7 +27,10 @@ export const getUserFeed = async (req, res) => {
 
     // --- Part 1: Posts from shops followed by the user ---
     queries.push(`
-      SELECT p.*, s.name AS shopName, s.type AS shopType, (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'followed' AS source
+      SELECT p.*, 
+        s.name AS shopName, s.type AS shopType, 
+        CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
+        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'followed' AS source
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
       JOIN Follow f ON p.shopId = f.shopId
@@ -38,7 +41,10 @@ export const getUserFeed = async (req, res) => {
     // --- Part 2: Posts from nearby shops (if location is provided) ---
     if (lat !== null && lng !== null) {
       queries.push(`
-        SELECT p.*, s.name AS shopName, s.type AS shopType, (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'nearby' AS source
+        SELECT p.*, 
+          s.name AS shopName, s.type AS shopType, 
+          CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
+          (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'nearby' AS source
         FROM Post p
         JOIN Shop s ON p.shopId = s.id
         WHERE ST_Distance_Sphere(s.location, POINT(?, ?)) < ?
@@ -49,7 +55,10 @@ export const getUserFeed = async (req, res) => {
 
     // --- Part 3: Recent posts (all posts, as a fallback) ---
     queries.push(`
-      SELECT p.*, s.name AS shopName, s.type AS shopType, (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'recent' AS source
+      SELECT p.*, 
+        s.name AS shopName, s.type AS shopType, 
+        CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
+        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'recent' AS source
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
     `);
@@ -67,9 +76,35 @@ export const getUserFeed = async (req, res) => {
     `;
     params.push(limit, offset);
 
-    const [rows] = await pool.query(finalQuery, params);
+    const [posts] = await pool.query(finalQuery, params);
 
-    res.status(200).json(rows);
+    const updatedPosts = posts.map((post) => ({
+      ...post,
+      fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL1}`,
+      fileURL2: post.fileURL2 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL2}`,
+      fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
+      fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
+      fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
+    }));
+
+    res.status(200).json(updatedPosts);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+};
+
+export const getUserLikes = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const [rows] = await pool.query(`
+      SELECT l.postId As postId, p.* FROM Likes l
+      JOIN Post p ON l.postId = p.id
+      WHERE l.userId = ?
+    `, [userId]);
+  
+    
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);

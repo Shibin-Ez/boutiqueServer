@@ -1,7 +1,7 @@
 -- Drop tables in the order of dependencies to avoid foreign key errors
--- DROP TABLE IF EXISTS Follow;
-DROP TABLE IF EXISTS `Like`;
-DROP TABLE IF EXISTS Post;
+DROP TABLE IF EXISTS Comment;
+-- DROP TABLE IF EXISTS `Like`;
+-- DROP TABLE IF EXISTS Post;
 -- DROP TABLE IF EXISTS Shop;
 -- DROP TABLE IF EXISTS User;
 
@@ -80,10 +80,12 @@ CREATE TABLE Comment (
     userId INT NOT NULL,
     postId INT NOT NULL,
     comment TEXT NOT NULL,
+    rating INT CHECK (rating >= 0 AND rating <= 5),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE,
-    FOREIGN KEY (postId) REFERENCES Post(id) ON DELETE CASCADE
+    FOREIGN KEY (postId) REFERENCES Post(id) ON DELETE CASCADE,
+    UNIQUE KEY (postId, userId)
 ) ENGINE=InnoDB;
 
 
