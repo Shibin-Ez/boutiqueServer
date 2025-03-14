@@ -3,7 +3,7 @@ import pool from "../config/pool.js";
 // CREATE
 export const addLike = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user.id;
     const { postId } = req.body;
 
     const [rows] = await pool.query(
@@ -36,11 +36,11 @@ export const getLikesCount = async (req, res) => {
 // DELETE
 export const removeLike = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user.id;
     const { postId } = req.body;
 
     const [rows] = await pool.query(
-      `DELETE FROM likes WHERE user_id = ? AND post_id = ?`,
+      `DELETE FROM likes WHERE userId = ? AND postId = ?`,
       [userId, postId]
     );
   } catch (err) {

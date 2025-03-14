@@ -5,7 +5,7 @@ import pool from "../config/pool.js";
 // READ
 export const getUserFeed = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const offset = (page - 1) * limit;
@@ -30,12 +30,15 @@ export const getUserFeed = async (req, res) => {
       SELECT p.*, 
         s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
-        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'followed' AS source,
-        (SELECT COUNT(*) FROM Comment c WHERE c.postId = p.id) AS commentCount
+        COUNT(DISTINCT l.userId) AS likeCount,
+        COUNT(DISTINCT c.id) AS commentCount
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
       JOIN Follow f ON p.shopId = f.shopId
+      LEFT JOIN \`Like\` l ON p.id = l.postId
+      LEFT JOIN Comment c ON p.id = c.postId
       WHERE f.userId = ?
+      GROUP BY p.id
     `);
     params.push(userId);
 
@@ -45,11 +48,14 @@ export const getUserFeed = async (req, res) => {
         SELECT p.*, 
           s.name AS shopName, s.type AS shopType, 
           CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
-          (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'nearby' AS source,
-          (SELECT COUNT(*) FROM Comment c WHERE c.postId = p.id) AS commentCount
+          COUNT(DISTINCT l.userId) AS likeCount,
+          COUNT(DISTINCT c.id) AS commentCount
         FROM Post p
         JOIN Shop s ON p.shopId = s.id
+        LEFT JOIN \`Like\` l ON p.id = l.postId
+        LEFT JOIN Comment c ON p.id = c.postId
         WHERE ST_Distance_Sphere(s.location, POINT(?, ?)) < ?
+        GROUP BY p.id
       `);
       // Note: POINT expects longitude first, then latitude.
       params.push(lng, lat, radius);
@@ -60,10 +66,13 @@ export const getUserFeed = async (req, res) => {
       SELECT p.*, 
         s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
-        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'recent' AS source,
-        (SELECT COUNT(*) FROM Comment c WHERE c.postId = p.id) AS commentCount
+        COUNT(DISTINCT l.userId) AS likeCount,
+        COUNT(DISTINCT c.id) AS commentCount
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
+      LEFT JOIN \`Like\` l ON p.id = l.postId
+      LEFT JOIN Comment c ON p.id = c.postId
+      GROUP BY p.id
     `);
 
     // Combine the queries using UNION. (Duplicates may occur, so you might need to handle them if necessary.)
