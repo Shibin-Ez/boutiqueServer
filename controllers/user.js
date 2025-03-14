@@ -30,7 +30,8 @@ export const getUserFeed = async (req, res) => {
       SELECT p.*, 
         s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
-        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'followed' AS source
+        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'followed' AS source,
+        (SELECT COUNT(*) FROM Comment c WHERE c.postId = p.id) AS commentCount
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
       JOIN Follow f ON p.shopId = f.shopId
@@ -44,7 +45,8 @@ export const getUserFeed = async (req, res) => {
         SELECT p.*, 
           s.name AS shopName, s.type AS shopType, 
           CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
-          (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'nearby' AS source
+          (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'nearby' AS source,
+          (SELECT COUNT(*) FROM Comment c WHERE c.postId = p.id) AS commentCount
         FROM Post p
         JOIN Shop s ON p.shopId = s.id
         WHERE ST_Distance_Sphere(s.location, POINT(?, ?)) < ?
@@ -58,7 +60,8 @@ export const getUserFeed = async (req, res) => {
       SELECT p.*, 
         s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
-        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'recent' AS source
+        (SELECT COUNT(*) FROM \`Like\` l WHERE l.postId = p.id) AS likeCount, 'recent' AS source,
+        (SELECT COUNT(*) FROM Comment c WHERE c.postId = p.id) AS commentCount
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
     `);

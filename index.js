@@ -45,7 +45,8 @@
     },
     filename: function (req, file, cb) {
       const timestamp = Date.now();
-      cb(null, `${timestamp}-${file.originalname}`);
+      const randomNumber = Math.floor(100000 + Math.random() * 900000);
+      cb(null, `${timestamp}-${randomNumber}`);
     },
   });
   const upload = multer({ storage });
