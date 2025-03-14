@@ -31,7 +31,8 @@ export const getUserFeed = async (req, res) => {
         s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
         COUNT(DISTINCT l.userId) AS likeCount,
-        COUNT(DISTINCT c.id) AS commentCount
+        COUNT(DISTINCT c.id) AS commentCount,
+        MAX(CASE WHEN l.userId = ? THEN 1 ELSE 0 END) AS isLiked
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
       JOIN Follow f ON p.shopId = f.shopId
@@ -40,7 +41,7 @@ export const getUserFeed = async (req, res) => {
       WHERE f.userId = ?
       GROUP BY p.id
     `);
-    params.push(userId);
+    params.push(userId, userId);
 
     // --- Part 2: Posts from nearby shops (if location is provided) ---
     if (lat !== null && lng !== null) {
@@ -49,7 +50,8 @@ export const getUserFeed = async (req, res) => {
           s.name AS shopName, s.type AS shopType, 
           CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
           COUNT(DISTINCT l.userId) AS likeCount,
-          COUNT(DISTINCT c.id) AS commentCount
+          COUNT(DISTINCT c.id) AS commentCount,
+          MAX(CASE WHEN l.userId = ? THEN 1 ELSE 0 END) AS isLiked
         FROM Post p
         JOIN Shop s ON p.shopId = s.id
         LEFT JOIN \`Like\` l ON p.id = l.postId
@@ -58,7 +60,7 @@ export const getUserFeed = async (req, res) => {
         GROUP BY p.id
       `);
       // Note: POINT expects longitude first, then latitude.
-      params.push(lng, lat, radius);
+      params.push(userId, lng, lat, radius);
     }
 
     // --- Part 3: Recent posts (all posts, as a fallback) ---
@@ -67,13 +69,15 @@ export const getUserFeed = async (req, res) => {
         s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
         COUNT(DISTINCT l.userId) AS likeCount,
-        COUNT(DISTINCT c.id) AS commentCount
+        COUNT(DISTINCT c.id) AS commentCount,
+        MAX(CASE WHEN l.userId = ? THEN 1 ELSE 0 END) AS isLiked
       FROM Post p
       JOIN Shop s ON p.shopId = s.id
       LEFT JOIN \`Like\` l ON p.id = l.postId
       LEFT JOIN Comment c ON p.id = c.postId
       GROUP BY p.id
     `);
+    params.push(userId);
 
     // Combine the queries using UNION. (Duplicates may occur, so you might need to handle them if necessary.)
     const unionQuery = queries.join(" UNION ");

@@ -10,6 +10,8 @@ export const addLike = async (req, res) => {
       `INSERT INTO \`Like\` (userId, postId) VALUES (?, ?)`,
       [userId, postId]
     );
+
+    res.status(200).send({ message: "Like added successfully!" });
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
@@ -43,6 +45,8 @@ export const removeLike = async (req, res) => {
       `DELETE FROM \`Like\` WHERE userId = ? AND postId = ?`,
       [userId, postId]
     );
+
+    res.status(200).send({ message: "Like removed successfully!" });
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
