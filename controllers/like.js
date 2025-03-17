@@ -16,7 +16,7 @@ export const addLike = async (req, res) => {
     console.log(err);
     res.status(500).send(err.message);
   }
-}
+};
 
 // READ
 export const getLikesCount = async (req, res) => {
@@ -33,7 +33,27 @@ export const getLikesCount = async (req, res) => {
     console.log(err);
     res.status(500).send(err.message);
   }
-}
+};
+
+export const getUserLikes = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [rows] = await pool.query(
+      `
+      SELECT l.*, p.*
+      FROM \`Like\` l
+      LEFT JOIN Post p ON l.postId = p.id
+      WHERE userId = ?`,
+      [userId]
+    );
+
+    res.status(200).json(rows);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+};
 
 // DELETE
 export const removeLike = async (req, res) => {
@@ -51,4 +71,4 @@ export const removeLike = async (req, res) => {
     console.log(err);
     res.status(500).send(err.message);
   }
-}
+};

@@ -102,7 +102,7 @@ CREATE TABLE ShortURL (
 INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123', '1234567890', 'admin');
 
 --@block
-select * FROM Post;
+select * FROM `Like`;
 
 --@block
 DELETE FROM Post WHERE id = 3

@@ -112,15 +112,15 @@ export const getUserFeed = async (req, res) => {
 
 export const getUserLikes = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.params.userId;
 
-    const [rows] = await pool.query(`
+    const [userLikes] = await pool.query(`
       SELECT l.postId As postId, p.* FROM \`Like\` l
       JOIN Post p ON l.postId = p.id
       WHERE l.userId = ?
     `, [userId]);
   
-    
+    res.status(200).json(userLikes);
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
