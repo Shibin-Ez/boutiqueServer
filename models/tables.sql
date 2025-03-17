@@ -89,6 +89,14 @@ CREATE TABLE Comment (
 ) ENGINE=InnoDB;
 
 
+--@block Create ShortURL table
+CREATE TABLE ShortURL (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    short VARCHAR(10) NOT NULL UNIQUE,
+    long VARCHAR(255) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 
 --@block insert into User table
 INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123', '1234567890', 'admin');

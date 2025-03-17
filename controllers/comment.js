@@ -11,7 +11,7 @@ export const addComment = async (req, res) => {
       [userId, postId, comment, rating]
     );
 
-    res.json(rows);
+    res.status(201).json(rows);
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
@@ -27,7 +27,7 @@ export const getComments = async (req, res) => {
       postId,
     ]);
 
-    res.json(rows);
+    res.status(200).json(rows);
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
