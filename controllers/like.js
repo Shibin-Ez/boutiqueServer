@@ -44,7 +44,7 @@ export const getUserLikes = async (req, res) => {
       SELECT l.*, p.*, s.name AS shopName
       FROM \`Like\` l
       LEFT JOIN Post p ON l.postId = p.id
-      LEFT JOIN Shop s ON l.shopId = s.id
+      LEFT JOIN Shop s ON p.shopId = s.id
       WHERE userId = ?`,
       [userId]
     );
