@@ -40,7 +40,7 @@ export const getUserLikes = async (req, res) => {
     const userId = req.params.userId;
     console.log(userId);
 
-    const [rows] = await pool.query(
+    const [likes] = await pool.query(
       `
       SELECT l.*, p.*, s.name AS shopName
       FROM \`Like\` l
@@ -50,7 +50,24 @@ export const getUserLikes = async (req, res) => {
       [userId]
     );
 
-    res.status(200).json(rows);
+    const updatedLikes = likes.map((like) => ({
+      ...like,
+      fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL1}`,
+      fileURL2:
+        like.fileURL2 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL2}`,
+      fileURL3:
+        like.fileURL3 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL3}`,
+      fileURL4:
+        like.fileURL4 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL4}`,
+      fileURL5:
+        like.fileURL5 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL5}`,
+    }));
+
+    res.status(200).json(updatedLikes);
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
