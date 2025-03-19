@@ -13,6 +13,7 @@
   import userRoutes from "./routes/user.js";
   import likeRoutes from "./routes/like.js";
   import shortURLRoutes from "./functions/shortURL.js";
+  import commentRoutes from "./routes/comment.js";
   import { createPost } from "./controllers/post.js";
   import { createShop } from "./controllers/shop.js";
   import { authenticate } from "./middlewares/authMiddleware.js";
@@ -71,6 +72,7 @@
   app.use("/stream", streamRoutes);
   app.use("/users", userRoutes);
   app.use("/likes", likeRoutes);
+  app.use("/comments", commentRoutes);
   app.use("/share", shortURLRoutes);
 
   // ERROR HANDLING (optional but recommended)

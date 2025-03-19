@@ -3,7 +3,7 @@ import pool from "../config/pool.js";
 // CREATE
 export const addComment = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.params.userId;
     const { postId, comment, rating } = req.body;
 
     const [rows] = await pool.query(
