@@ -25,7 +25,7 @@ export const getComments = async (req, res) => {
 
     const [rows] = await pool.query(
       `
-      SELECT c.*, u.name AS userName
+      SELECT c.*, u.name AS userName, u.profilePicURL AS userProfilePicURL
       FROM Comment c
       LEFT JOIN User u ON c.userId = u.id
       WHERE c.postId = ?
