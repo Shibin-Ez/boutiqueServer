@@ -37,7 +37,8 @@ export const getLikesCount = async (req, res) => {
 
 export const getUserLikes = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.userId;
+    console.log(userId);
 
     const [rows] = await pool.query(
       `
@@ -45,7 +46,7 @@ export const getUserLikes = async (req, res) => {
       FROM \`Like\` l
       LEFT JOIN Post p ON l.postId = p.id
       LEFT JOIN Shop s ON p.shopId = s.id
-      WHERE userId = ?`,
+      WHERE l.userId = ?`,
       [userId]
     );
 

@@ -103,6 +103,9 @@ CREATE TABLE ShortURL (
 INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123', '1234567890', 'admin');
 
 --@block
+insert into `Like` (userId, postId) VALUES (2, 4);
+
+--@block
 select * FROM `Like`;
 
 --@block

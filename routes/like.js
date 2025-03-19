@@ -1,7 +1,7 @@
 import express from 'express';
 import { addLike, removeLike } from '../controllers/like.js';
 import { authenticate } from '../middlewares/authMiddleware.js';
-import { getUserLikes } from '../controllers/user.js';
+import { getUserLikes } from '../controllers/like.js';
 
 const router = express.Router();
 
