@@ -41,7 +41,7 @@ export const getUserLikes = async (req, res) => {
 
     const [rows] = await pool.query(
       `
-      SELECT l.*, p.*, s.shopName AS shopName
+      SELECT l.*, p.*, s.name AS shopName
       FROM \`Like\` l
       LEFT JOIN Post p ON l.postId = p.id
       LEFT JOIN Shop s ON l.shopId = s.id
