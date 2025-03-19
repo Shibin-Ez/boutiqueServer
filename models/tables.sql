@@ -10,6 +10,7 @@ CREATE TABLE User (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
+    profilePicURL VARCHAR(255) DEFAULT 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     phone_no VARCHAR(50) UNIQUE,
     passwordHash VARCHAR(255),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -106,3 +107,6 @@ select * FROM `Like`;
 
 --@block
 DELETE FROM Post WHERE id = 3
+
+--@block
+ALTER TABLE User ADD COLUMN profilePicURL VARCHAR(255) DEFAULT 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
