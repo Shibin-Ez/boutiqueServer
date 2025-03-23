@@ -46,7 +46,7 @@ export const getFollowings = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    const [followings] = await pool.query(
+    const [shops] = await pool.query(
       `
       SELECT s.* FROM Follow f
       LEFT JOIN Shop s ON f.shopId = s.id
@@ -55,7 +55,14 @@ export const getFollowings = async (req, res) => {
       [userId]
     );
 
-    res.status(200).json(followings);
+    const updatedShops = shops.map((shop) => {
+      return {
+        ...shop,
+        profilePicURL: `${process.env.SERVER_URL}/public/assets/posts/${shop.profilePicURL}`
+      }
+    })
+
+    res.status(200).json(updatedShops);
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });

@@ -85,7 +85,21 @@ export const getPost = async (req, res) => {
   try {
     const postId = req.params.id;
 
-    const [posts] = await pool.query(`SELECT * FROM Post WHERE id = ?`, [
+    const userId = req.query.userId;
+
+    const [posts] = await pool.query(`
+      SELECT 
+        p.*,
+        JSON_OBJECT(
+          'id', s.id,
+          'name', s.name,
+          'type', s.type,
+          'profilePicURL', s.profilePicURL
+          -- Add other columns from Shop here
+        ) AS shop
+      FROM Post p
+      LEFT JOIN Shop s ON p.shopId = s.id 
+      WHERE p.id = ?`, [
       postId,
     ]);
 
@@ -93,20 +107,26 @@ export const getPost = async (req, res) => {
       return res.status(404).send("post not found");
     }
 
-    const post = posts[0];
+    let isLiked = false;
 
-    const [shops] = await pool.query(`SELECT * FROM Shop WHERE id = ?`, [
-      post.shopId,
-    ]);
+    if (userId && userId != -1) {
+      const [rows] = await pool.query(`
+        SELECT * FROM \`Like\` WHERE userId = ? AND postId = ?  
+      `, [userId, postId])
+
+      if (rows.length) isLiked = true;
+    }
+
+    const post = posts[0];
 
     const updatedPost = {
       ...post,
-      shop: shops[0],
       fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL1}`,
       fileURL2: post.fileURL2 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL2}`,
       fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
       fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
       fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
+      isLiked
     };
 
     res.status(200).json(updatedPost);
