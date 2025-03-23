@@ -1,9 +1,9 @@
 -- Drop tables in the order of dependencies to avoid foreign key errors
 DROP TABLE IF EXISTS Comment;
--- DROP TABLE IF EXISTS `Like`;
--- DROP TABLE IF EXISTS Post;
--- DROP TABLE IF EXISTS Shop;
--- DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS `Like`;
+DROP TABLE IF EXISTS Post;
+DROP TABLE IF EXISTS Shop;
+DROP TABLE IF EXISTS User;
 
 --@block Create User table
 CREATE TABLE User (
@@ -106,10 +106,18 @@ INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123
 insert into `Like` (userId, postId) VALUES (2, 4);
 
 --@block
-select * FROM `Like`;
+select * FROM User;
 
 --@block
 DELETE FROM Post WHERE id = 3
 
 --@block
 ALTER TABLE User ADD COLUMN profilePicURL VARCHAR(255) DEFAULT 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+
+--@block
+SHOW CREATE TABLE User;
+
+
+--@block
+ALTER TABLE User DROP INDEX name;
+

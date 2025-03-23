@@ -78,7 +78,7 @@ export const getShopDetails = async (req, res) => {
       ...shops[0],
       profilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${shops[0].profilePicURL}`,
       postsCount: postsResponse[0].totalPosts,
-      followersCount:followersResponse[0].totalFollowers,
+      followersCount: followersResponse[0].totalFollowers,
     };
 
     res.status(200).json(updatedShop);
@@ -98,7 +98,7 @@ export const getShopsNearby = async (req, res) => {
         .json({ error: "Latitude and longitude are required" });
     }
 
-    const [rows] = await pool.query(
+    const [shops] = await pool.query(
       `SELECT *, 
       ST_Distance_Sphere(location, POINT(?, ?)) AS distance 
       FROM Shop 
@@ -106,7 +106,14 @@ export const getShopsNearby = async (req, res) => {
       [longitude, latitude] // MySQL uses (longitude, latitude) in POINT()
     );
 
-    res.status(200).json(rows);
+    const [updatedShops] = shops.map((shop) => {
+      return {
+        ...shop,
+        profilePicURL: `${process.env.SERVER_URL}/public/assets/posts/${shop.profilePicURL}`,
+      };
+    });
+
+    res.status(200).json(shops);
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
