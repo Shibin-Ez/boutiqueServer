@@ -60,4 +60,24 @@ export const getFollowings = async (req, res) => {
     console.log(err);
     res.status(500).send({ message: err.message });
   }
-}
+};
+
+export const deleteFollow = async (req, res) => {
+  try {
+    const shopId = req.params.shopId;
+    const userId = req.params.userId;
+
+    const [rows] = await pool.query(
+      `
+      DELETE FROM Follow 
+      WHERE userId = ? AND shopId = ?
+      `,
+      [userId, shopId]
+    );
+
+    res.status(200).json({ message: "unfollowed successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
