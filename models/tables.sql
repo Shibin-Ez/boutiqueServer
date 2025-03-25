@@ -4,7 +4,8 @@
 -- DROP TABLE IF EXISTS Post;
 -- DROP TABLE IF EXISTS Shop;
 -- DROP TABLE IF EXISTS User;
-DROP TABLE IF EXISTS UserNotification;
+-- DROP TABLE IF EXISTS UserNotification;
+DROP TABLE IF EXISTS ShopNotification;
 
 --@block Create User table
 CREATE TABLE User (
@@ -120,6 +121,7 @@ CREATE TABLE UserNotification (
     FOREIGN KEY (receiverId) REFERENCES User(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+--@block Create table Notification
 CREATE TABLE ShopNotification (
     id INT AUTO_INCREMENT PRIMARY KEY,
     senderId INT NOT NULL,
@@ -129,7 +131,7 @@ CREATE TABLE ShopNotification (
 
     INDEX idx_shopNotification_receiverShopId (receiverShopId),
 
-    FOREIGN KEY (senderShopId) REFERENCES Shop(id),
+    FOREIGN KEY (senderId) REFERENCES Shop(id),
     FOREIGN KEY (receiverShopId) REFERENCES User(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

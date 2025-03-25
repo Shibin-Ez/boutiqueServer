@@ -32,7 +32,7 @@ export const getUserNotifications = async (req, res) => {
         CONCAT(?, '/public/assets/shops/', s.profilePicURL) AS shopProfilePicURL
       FROM UserNotification n
       LEFT JOIN Shop s ON n.senderShopId = s.id
-      WHERE n.receiver = ?
+      WHERE n.receiverId = ?
     `,
       [process.env.SERVER_URL, userId]
     );
