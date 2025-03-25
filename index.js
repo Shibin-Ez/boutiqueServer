@@ -96,6 +96,10 @@ app.get("/config/notification", async (req, res) => {
   }
 });
 
+app.get("/mail", async (req, res) => {
+  res.redirect("mailto:botiqstore@gmail.com?subject=Request%20to%20Delete%20My%20Account&body=Hello,%0D%0A%0D%0AI");
+})
+
 // ERROR HANDLING (optional but recommended)
 app.use((err, req, res, next) => {
   console.error(err.stack);
