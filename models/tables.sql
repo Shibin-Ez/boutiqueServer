@@ -1,9 +1,10 @@
 -- Drop tables in the order of dependencies to avoid foreign key errors
-DROP TABLE IF EXISTS Comment;
-DROP TABLE IF EXISTS `Like`;
-DROP TABLE IF EXISTS Post;
-DROP TABLE IF EXISTS Shop;
-DROP TABLE IF EXISTS User;
+-- DROP TABLE IF EXISTS Comment;
+-- DROP TABLE IF EXISTS `Like`;
+-- DROP TABLE IF EXISTS Post;
+-- DROP TABLE IF EXISTS Shop;
+-- DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS UserNotification;
 
 --@block Create User table
 CREATE TABLE User (
@@ -89,6 +90,48 @@ CREATE TABLE Comment (
     UNIQUE KEY (postId, userId)
 ) ENGINE=InnoDB;
 
+--@block Create Chat table
+CREATE TABLE Chat (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    senderId INT NOT NULL,
+    receiverId INT NOT NULL,
+    content TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+     -- Indexes for Faster Queries
+    INDEX idx_chat_sender_receiver (senderId, receiverId), -- Composite index for faster retrieval
+    INDEX idx_chat_timestamp (timestamp), -- Helps with sorting messages efficiently
+
+    FOREIGN KEY (senderId) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiverId) REFERENCES User(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+--@block Create table Notification
+CREATE TABLE UserNotification (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    senderShopId INT NOT NULL,
+    receiverId INT NOT NULL,
+    content TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_userNotification_receiverId (receiverId),
+
+    FOREIGN KEY (senderShopId) REFERENCES Shop(id),
+    FOREIGN KEY (receiverId) REFERENCES User(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE ShopNotification (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    senderId INT NOT NULL,
+    receiverShopId INT NOT NULL,
+    content TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_shopNotification_receiverShopId (receiverShopId),
+
+    FOREIGN KEY (senderShopId) REFERENCES Shop(id),
+    FOREIGN KEY (receiverShopId) REFERENCES User(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
 --@block Create ShortURL table
 CREATE TABLE ShortURL (
@@ -106,7 +149,7 @@ INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123
 insert into `Like` (userId, postId) VALUES (2, 4);
 
 --@block
-select * FROM User;
+select * FROM Chat;
 
 --@block
 DELETE FROM Post WHERE id = 3
@@ -121,3 +164,12 @@ SHOW CREATE TABLE User;
 --@block
 ALTER TABLE User DROP INDEX name;
 
+--@block
+DESCRIBE UserNotification;
+
+--@block
+SELECT * 
+FROM User u
+WHERE EXISTS (
+    SELECT 1 FROM Chat c WHERE c.senderId = u.id OR c.receiverId = u.id
+);

@@ -101,6 +101,7 @@ export const getUserFeed = async (req, res) => {
       fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
       fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
       fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
+      isLiked: (post.isLiked == 1)
     }));
 
     res.status(200).json(updatedPosts);

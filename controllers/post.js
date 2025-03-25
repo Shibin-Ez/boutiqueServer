@@ -95,7 +95,6 @@ export const getPost = async (req, res) => {
           'name', s.name,
           'type', s.type,
           'profilePicURL', s.profilePicURL
-          -- Add other columns from Shop here
         ) AS shop
       FROM Post p
       LEFT JOIN Shop s ON p.shopId = s.id 

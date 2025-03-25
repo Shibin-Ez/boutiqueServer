@@ -1,10 +1,12 @@
 import express from "express";
+import http from "http";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import multer from "multer";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import { Server } from "socket.io";
 
 import shopRoutes from "./routes/shop.js";
 import authRoutes from "./routes/auth.js";
@@ -15,9 +17,13 @@ import likeRoutes from "./routes/like.js";
 import shortURLRoutes from "./functions/shortURL.js";
 import commentRoutes from "./routes/comment.js";
 import followRoutes from "./routes/follow.js";
+import chatRoutes from "./routes/chat.js";
+import notificationRoutes from "./routes/notification.js";
 import { createPost } from "./controllers/post.js";
 import { createShop } from "./controllers/shop.js";
 import { authenticate } from "./middlewares/authMiddleware.js";
+import { getAccessToken } from "./config/notification.js";
+import { getChatHistory, saveMessage } from "./controllers/chat.js";
 
 // CONFIGURATION
 dotenv.config();
@@ -76,6 +82,19 @@ app.use("/likes", likeRoutes);
 app.use("/comments", commentRoutes);
 app.use("/share", shortURLRoutes);
 app.use("/follow", followRoutes);
+app.use("/chat", chatRoutes);
+app.use("/notification", notificationRoutes);
+
+// CUSTOM ROUTES
+app.get("/config/notification", async (req, res) => {
+  try {
+    const token = await getAccessToken();
+    res.status(200).json(token);
+  } catch (err) {
+    console.error("Error generating token:", err);
+    res.status(500).json({ error: "Failed to generate token" });
+  }
+});
 
 // ERROR HANDLING (optional but recommended)
 app.use((err, req, res, next) => {
@@ -83,7 +102,53 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
+// WEB SOCKET
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+// app.use("/chat", chatRoutes);
+
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("joinRoom", ({ senderId, receiverId }) => {
+    const roomId = [senderId, receiverId].sort().join("_");
+    socket.join(roomId);
+    console.log(`User joined room: ${roomId}`);
+  });
+
+  socket.on("sendMessage", async ({ senderId, receiverId, content }) => {
+    const messageId = await saveMessage(senderId, receiverId, content);
+
+    if (messageId) {
+      const message = {
+        id: messageId,
+        senderId,
+        receiverId,
+        content,
+        timestamp: new Date().toISOString(),
+      };
+
+      const roomId = [senderId, receiverId].sort().join("_");
+      io.to(roomId).emit("receiveMessage", message);
+    }
+  });
+
+  socket.on("fetchChatHistory", async ({ senderId, receiverId }, callback) => {
+    const messages = await getChatHistory(senderId, receiverId);
+    callback(messages);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+  });
+});
+
 // START SERVER
-app.listen(PORT, "0.0.0.0", () =>
+server.listen(PORT, "0.0.0.0", () =>
   console.log(`Server is running on port ${PORT}`)
 );

@@ -59,6 +59,7 @@ export const getShops = async (req, res) => {
 export const getShopDetails = async (req, res) => {
   try {
     const shopId = req.params.id;
+    const userId = req.query.userId;
 
     const [shops] = await pool.query(`SELECT * FROM Shop WHERE id = ?`, [
       shopId,
@@ -74,11 +75,23 @@ export const getShopDetails = async (req, res) => {
       [shopId]
     );
 
+    let isFollowing = false;
+
+    if (userId && userId != -1) {
+      const [rows] = await pool.query(
+        `SELECT COUNT(*) AS count FROM Follow WHERE userId = ? AND shopId = ?`,
+        [userId, shopId]
+      );
+
+      if (rows[0].count > 0) isFollowing = true;
+    }
+
     const updatedShop = {
       ...shops[0],
       profilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${shops[0].profilePicURL}`,
       postsCount: postsResponse[0].totalPosts,
       followersCount: followersResponse[0].totalFollowers,
+      isFollowing,
     };
 
     res.status(200).json(updatedShop);
@@ -106,14 +119,14 @@ export const getShopsNearby = async (req, res) => {
       [longitude, latitude] // MySQL uses (longitude, latitude) in POINT()
     );
 
-    const [updatedShops] = shops.map((shop) => {
+    const updatedShops = shops.map((shop) => {
       return {
         ...shop,
         profilePicURL: `${process.env.SERVER_URL}/public/assets/posts/${shop.profilePicURL}`,
       };
     });
 
-    res.status(200).json(shops);
+    res.status(200).json(updatedShops);
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
