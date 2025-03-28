@@ -147,6 +147,14 @@ io.on("connection", (socket) => {
     callback(messages);
   });
 
+  socket.on("userInactive", ({ userId }) => {
+    console.log(userId + " is printing offline");
+  })
+
+  socket.on("userOnline", ({ userId }) => {
+    console.log(userId + " is printing online");
+  })
+
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
   });

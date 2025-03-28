@@ -1,15 +1,12 @@
 import pool from "../config/pool.js";
 
 // CREATE
-export const createNotification = async (req, res) => {
+export const createNotification = async (senderShopId, receiverId, content) => {
   try {
-    const senderShopId = req.query.senderShopId;
-
-    const { receiver, content } = req.body;
 
     const [rows] = await pool.query(
       `INSERT INTO UserNotification (senderShopId, receiver, content) VALUES (?, ?, ?)`,
-      [senderShopId, receiver, content]
+      [senderShopId, receiverId, content]
     );
 
     res.status(201).json({ message: "notification added successfully" });

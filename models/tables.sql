@@ -173,5 +173,21 @@ DESCRIBE UserNotification;
 SELECT * 
 FROM User u
 WHERE EXISTS (
-    SELECT 1 FROM Chat c WHERE c.senderId = u.id OR c.receiverId = u.id
+    SELECT 1 FROM Chat c WHERE c.senderId = 8 OR c.receiverId = 8
 );
+
+--@block
+SELECT 
+    c1.senderId, 
+    u.name AS senderName,
+    u.profilePicURL,
+    c1.content AS lastMessage,
+    c1.timestamp
+FROM Chat c1
+JOIN User u ON c1.senderId = u.id
+WHERE c1.id = (
+    SELECT MAX(c2.id) 
+    FROM Chat c2 
+    WHERE c2.senderId = c1.senderId AND c2.receiverId = 2  -- Replace ? with the userId
+)
+ORDER BY c1.timestamp DESC;
