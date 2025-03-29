@@ -38,20 +38,26 @@ export const getChatUserList = async (req, res) => {
     
     const [users] = await pool.query(`
       SELECT 
-        c1.senderId, 
+        u.id AS userId,
         u.name AS senderName,
         u.profilePicURL,
-        c1.content AS lastMessage,
-        c1.timestamp
-      FROM Chat c1
-      JOIN User u ON c1.senderId = u.id
-      WHERE c1.id = (
-        SELECT MAX(c2.id) 
+        c.id AS lastMessageId,
+        c.content AS lastMessage,
+        c.timestamp AS timestamp,
+        c.senderId,
+        c.receiverId
+      FROM Chat c
+      JOIN User u ON (u.id = c.senderId OR u.id = c.receiverId) 
+      WHERE (c.senderId = ? OR c.receiverId = ?) 
+      AND u.id != ?  -- Exclude the user themselves
+      AND c.timestamp = (
+        SELECT MAX(c2.timestamp) 
         FROM Chat c2 
-        WHERE c2.senderId = c1.senderId AND c2.receiverId = ?
+        WHERE (c2.senderId = u.id AND c2.receiverId = ?) 
+          OR (c2.receiverId = u.id AND c2.senderId = ?)
       )
-      ORDER BY c1.timestamp DESC;
-    `, [userId])
+      ORDER BY c.timestamp DESC;
+    `, [userId, userId, userId, userId, userId])
 
     res.status(200).json(users);
   } catch (err) {

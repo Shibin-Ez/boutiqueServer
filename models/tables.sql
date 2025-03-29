@@ -188,6 +188,34 @@ JOIN User u ON c1.senderId = u.id
 WHERE c1.id = (
     SELECT MAX(c2.id) 
     FROM Chat c2 
-    WHERE c2.senderId = c1.senderId AND c2.receiverId = 2  -- Replace ? with the userId
+    WHERE (c2.senderId = c1.senderId AND c2.receiverId = 2) OR (c2.senderId = 2 AND c2.receiverId = c1.receiverId)  -- Replace ? with the userId
 )
 ORDER BY c1.timestamp DESC;
+
+--@block
+SELECT *
+FROM User u
+JOIN Chat c ON u.id = c.senderId OR u.id = c.receiverId
+WHERE c.senderId = 2 OR c.receiverId = 2
+
+--@block
+SELECT 
+    u.id AS userId,
+    u.name AS userName,
+    u.profilePicURL,
+    c.id AS lastMessageId,
+    c.content AS lastMessage,
+    c.timestamp AS lastMessageTime,
+    c.senderId,
+    c.receiverId
+FROM Chat c
+JOIN User u ON (u.id = c.senderId OR u.id = c.receiverId) 
+WHERE (c.senderId = 2 OR c.receiverId = 2) 
+AND u.id != 2  -- Exclude the user themselves
+AND c.timestamp = (
+    SELECT MAX(c2.timestamp) 
+    FROM Chat c2 
+    WHERE (c2.senderId = u.id AND c2.receiverId = 2) 
+       OR (c2.receiverId = u.id AND c2.senderId = 2)
+)
+ORDER BY c.timestamp DESC;
