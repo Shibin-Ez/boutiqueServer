@@ -20,10 +20,11 @@ import followRoutes from "./routes/follow.js";
 import chatRoutes from "./routes/chat.js";
 import notificationRoutes from "./routes/notification.js";
 import { createPost } from "./controllers/post.js";
-import { createShop } from "./controllers/shop.js";
+import { createShop, getShopDetails, getShopDetailsFromUserId } from "./controllers/shop.js";
 import { authenticate } from "./middlewares/authMiddleware.js";
 import { getAccessToken } from "./config/notification.js";
 import { getChatHistory, saveMessage } from "./controllers/chat.js";
+import { getUser } from "./controllers/user.js";
 
 // CONFIGURATION
 dotenv.config();
@@ -119,14 +120,25 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
-  socket.on("joinRoom", ({ senderId, receiverId }) => {
-    const roomId = [senderId, receiverId].sort().join("_");
+  socket.on("joinRoom", async ({ senderId, receiverId, shopId, isShop }, callback) => {
+    const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
+    console.log(isShop + " is what getting");
     socket.join(roomId);
     console.log(`User joined room: ${roomId}`);
+
+    if (!isShop) {
+      const shop = await getShopDetailsFromUserId(receiverId);
+      callback(shop);
+    } else {
+      const user = await getUser(receiverId);
+      console.log(user);
+      callback(user);
+    }
   });
 
-  socket.on("sendMessage", async ({ senderId, receiverId, content }) => {
-    const messageId = await saveMessage(senderId, receiverId, content);
+  socket.on("sendMessage", async ({ senderId, receiverId, content, shopId }) => {
+    const messageId = await saveMessage(senderId, receiverId, content, shopId);
+    console.log("sending message with shop " + shopId);
 
     if (messageId) {
       const message = {
@@ -137,7 +149,7 @@ io.on("connection", (socket) => {
         timestamp: new Date().toISOString(),
       };
 
-      const roomId = [senderId, receiverId].sort().join("_");
+      const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
       io.to(roomId).emit("receiveMessage", message);
     }
   });

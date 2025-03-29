@@ -4,8 +4,9 @@
 -- DROP TABLE IF EXISTS Post;
 -- DROP TABLE IF EXISTS Shop;
 -- DROP TABLE IF EXISTS User;
+DROP TABLE IF EXISTS Chat;
 -- DROP TABLE IF EXISTS UserNotification;
-DROP TABLE IF EXISTS ShopNotification;
+-- DROP TABLE IF EXISTS ShopNotification;
 
 --@block Create User table
 CREATE TABLE User (
@@ -96,6 +97,7 @@ CREATE TABLE Chat (
     id INT AUTO_INCREMENT PRIMARY KEY,
     senderId INT NOT NULL,
     receiverId INT NOT NULL,
+    shopId INT NOT NULL,
     content TEXT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
@@ -104,7 +106,8 @@ CREATE TABLE Chat (
     INDEX idx_chat_timestamp (timestamp), -- Helps with sorting messages efficiently
 
     FOREIGN KEY (senderId) REFERENCES User(id) ON DELETE CASCADE,
-    FOREIGN KEY (receiverId) REFERENCES User(id) ON DELETE CASCADE
+    FOREIGN KEY (receiverId) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (shopId) REFERENCES Shop(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 --@block Create table Notification

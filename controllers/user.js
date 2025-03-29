@@ -3,6 +3,19 @@ import pool from "../config/pool.js";
 // CREATE
 
 // READ
+export const getUser = async (userId) => {
+  try {
+    const [users] = await pool.query(
+      `SELECT name, profilePicURL FROM User WHERE id = ?`,
+      [userId]
+    );
+
+    return users[0];
+  } catch (err) {
+    return "error";
+  }
+};
+
 export const getUserFeed = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -97,11 +110,19 @@ export const getUserFeed = async (req, res) => {
     const updatedPosts = posts.map((post) => ({
       ...post,
       fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL1}`,
-      fileURL2: post.fileURL2 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL2}`,
-      fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
-      fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
-      fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
-      isLiked: (post.isLiked == 1)
+      fileURL2:
+        post.fileURL2 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL2}`,
+      fileURL3:
+        post.fileURL3 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
+      fileURL4:
+        post.fileURL4 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
+      fileURL5:
+        post.fileURL5 &&
+        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
+      isLiked: post.isLiked == 1,
     }));
 
     res.status(200).json(updatedPosts);
@@ -115,12 +136,15 @@ export const getUserLikes = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    const [userLikes] = await pool.query(`
+    const [userLikes] = await pool.query(
+      `
       SELECT l.postId As postId, p.* FROM \`Like\` l
       JOIN Post p ON l.postId = p.id
       WHERE l.userId = ?
-    `, [userId]);
-  
+    `,
+      [userId]
+    );
+
     res.status(200).json(userLikes);
   } catch (err) {
     console.log(err);

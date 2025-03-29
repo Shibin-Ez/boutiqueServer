@@ -101,6 +101,29 @@ export const getShopDetails = async (req, res) => {
   }
 };
 
+export const getShopDetailsFromUserId = async (userId) => {
+  try {
+
+    const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
+      userId,
+    ]);
+
+    if (!shops.length) {
+      return;
+    }
+
+    const updatedShop = {
+      ...shops[0],
+      profilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${shops[0].profilePicURL}`,
+    };
+
+    return updatedShop;
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+};
+
 export const getShopsNearby = async (req, res) => {
   try {
     const { lat: latitude, lng: longitude } = req.query;

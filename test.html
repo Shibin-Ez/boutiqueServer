@@ -65,7 +65,7 @@
                 return;
             }
 
-            const roomId = [senderId, receiverId].sort().join("_");
+            const roomId = [senderId, receiverId, 9].sort().join("_");
             socket.emit("joinRoom", { senderId, receiverId });
             document.getElementById("messages").innerHTML = `<p>Joined chat room: ${roomId}</p>`;
 

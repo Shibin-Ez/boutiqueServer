@@ -1,11 +1,11 @@
 import pool from "../config/pool.js";
 
 // CREATE
-export const saveMessage = async (senderId, receiverId, content) => {
+export const saveMessage = async (senderId, receiverId, content, shopId) => {
   try {
     const [result] = await pool.query(
-      `INSERT INTO Chat (senderId, receiverId, content) VALUES (?, ?, ?)`,
-      [senderId, receiverId, content]
+      `INSERT INTO Chat (senderId, receiverId, shopId, content) VALUES (?, ?, ?, ?)`,
+      [senderId, receiverId, shopId, content]
     );
     return result.insertId; // Return inserted message ID
   } catch (err) {
@@ -45,9 +45,13 @@ export const getChatUserList = async (req, res) => {
         c.content AS lastMessage,
         c.timestamp AS timestamp,
         c.senderId,
-        c.receiverId
+        c.receiverId,
+        s.id AS shopId,
+        s.name AS shopName,
+        s.profilePicURL AS shopProfilePicURL
       FROM Chat c
       JOIN User u ON (u.id = c.senderId OR u.id = c.receiverId) 
+      LEFT JOIN Shop s ON c.shopId = s.id
       WHERE (c.senderId = ? OR c.receiverId = ?) 
       AND u.id != ?  -- Exclude the user themselves
       AND c.timestamp = (
@@ -59,7 +63,21 @@ export const getChatUserList = async (req, res) => {
       ORDER BY c.timestamp DESC;
     `, [userId, userId, userId, userId, userId])
 
-    res.status(200).json(users);
+    const [shopIds] = await pool.query(`SELECT id FROM Shop WHERE userId = ?`, [userId]);
+    const shopId = shopIds[0].id;
+
+    // loop
+    const updatedUsers = users.map(user => {
+      const isShop = user.shopId != shopId;
+      
+      return {
+        ...user,
+        senderName: isShop ? user.shopName : user.senderName,
+        profilePicURL: isShop ? `${process.env.SERVER_URL}/public/assets/shops/` + user.shopProfilePicURL : user.profilePicURL
+      }
+    })
+
+    res.status(200).json(updatedUsers);
   } catch (err) {
     console.log(err);
     res.status(500).send(err.message);
