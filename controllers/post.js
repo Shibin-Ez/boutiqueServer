@@ -94,10 +94,12 @@ export const getPost = async (req, res) => {
           'id', s.id,
           'name', s.name,
           'type', s.type,
-          'profilePicURL', s.profilePicURL
+          'profilePicURL', s.profilePicURL,
+          'userId', u.id
         ) AS shop
       FROM Post p
-      LEFT JOIN Shop s ON p.shopId = s.id 
+      LEFT JOIN Shop s ON p.shopId = s.id
+      LEFT JOIN User u ON s.userId = u.id
       WHERE p.id = ?`, [
       postId,
     ]);

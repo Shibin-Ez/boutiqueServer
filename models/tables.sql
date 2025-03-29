@@ -96,7 +96,7 @@ CREATE TABLE Chat (
     id INT AUTO_INCREMENT PRIMARY KEY,
     senderId INT NOT NULL,
     receiverId INT NOT NULL,
-    content TEXT,
+    content TEXT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
      -- Indexes for Faster Queries
