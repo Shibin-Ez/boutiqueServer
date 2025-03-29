@@ -64,7 +64,7 @@ export const getChatUserList = async (req, res) => {
     `, [userId, userId, userId, userId, userId])
 
     const [shopIds] = await pool.query(`SELECT id FROM Shop WHERE userId = ?`, [userId]);
-    const shopId = shopIds[0].id;
+    const shopId = shopIds[0] ? shopIds[0].id : -1;
 
     // loop
     const updatedUsers = users.map(user => {
