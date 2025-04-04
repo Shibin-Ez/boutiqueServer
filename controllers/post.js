@@ -66,10 +66,10 @@ export const createPost = async (req, res) => {
         description,
         shopId,
         file1.filename,
-        file2.filename,
-        file3.filename,
-        file4.filename,
-        file5.filename,
+        file2 ? file2.filename : null,
+        file3 ? file3.filename : null,
+        file4 ? file4.filename : null,
+        file5 ? file5.filename : null,
       ]
     );
 
