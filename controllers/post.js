@@ -31,6 +31,7 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: "Main file is required" });
     }
 
+    console.log(req.files);
     const file1 = req.files.mainFile[0];
     const additionalFiles = req.files.additionalFiles
       ? req.files.additionalFiles.map((file) => file)
