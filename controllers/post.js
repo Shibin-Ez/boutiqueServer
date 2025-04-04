@@ -3,6 +3,7 @@ import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
 import { compressImage, compressVideo } from "../functions/media.js";
+import { fileTypeFromFile } from "file-type";
 
 const generateThumbnail = (videoPath, thumbnailPath) => {
   return new Promise((resolve, reject) => {
@@ -48,12 +49,18 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: "User does not have a shop" });
     }
 
-    // if (shops[0].id !== shopId) {
-    //   console.log("User is not the owner of the shop");
-    //   return res
-    //     .status(400)
-    //     .json({ message: "User is not the owner of the shop" });
-    // }
+    // compress the media files
+    const files = [file1, file2, file3, file4, file5];
+    for (const file of files) {
+      const type = await fileTypeFromFile(file.path);
+      if (type.mime.startsWith("image/")) {
+        await compressImage(file.filename, file.filename);
+      } else if (type.mime.startsWith("video/")) {
+        await compressVideo(file.filename, file.filename);
+      } else {
+        return res.status(400).send("Unsupported file type.");
+      }
+    }
 
     // create the post in db
     const [rows] = await pool.query(
@@ -72,18 +79,6 @@ export const createPost = async (req, res) => {
         file5 ? file5.filename : null,
       ]
     );
-
-    // compress the media files
-    const files = [file1, file2, file3, file4, file5];
-    for (const file of files) {
-      if (file.mimetype.startsWith("image/")) {
-        await compressImage(file.filename, file.filename);
-      } else if (file.mimetype.startsWith("video/")) {
-        await compressVideo(file.filename, file.filename);
-      } else {
-        return res.status(400).send("Unsupported file type.");
-      }
-    }
 
     res
       .status(201)
