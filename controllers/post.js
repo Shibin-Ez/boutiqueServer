@@ -31,11 +31,11 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: "Main file is required" });
     }
 
-    const fileURL1 = req.files.mainFile[0].filename;
+    const file1 = req.files.mainFile[0];
     const additionalFiles = req.files.additionalFiles
-      ? req.files.additionalFiles.map((file) => file.filename)
+      ? req.files.additionalFiles.map((file) => file)
       : [];
-    const [fileURL2, fileURL3, fileURL4, fileURL5] = additionalFiles;
+    const [file2, file3, file4, file5] = additionalFiles;
 
     // check if user is the owner of the shop
     const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
@@ -64,21 +64,21 @@ export const createPost = async (req, res) => {
         discount_price,
         description,
         shopId,
-        fileURL1,
-        fileURL2,
-        fileURL3,
-        fileURL4,
-        fileURL5,
+        file1.filename,
+        file2.filename,
+        file3.filename,
+        file4.filename,
+        file5.filename,
       ]
     );
 
     // compress the media files
-    const files = [fileURL1, fileURL2, fileURL3, fileURL4, fileURL5];
+    const files = [file1, file2, file3, file4, file5];
     for (const file of files) {
       if (file.mimetype.startsWith("image/")) {
-        await compressImage(file, file);
+        await compressImage(file.filename, file.filename);
       } else if (file.mimetype.startsWith("video/")) {
-        await compressVideo(file, file);
+        await compressVideo(file.filename, file.filename);
       } else {
         return res.status(400).send("Unsupported file type.");
       }
