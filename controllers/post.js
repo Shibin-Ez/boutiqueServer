@@ -76,9 +76,9 @@ export const createPost = async (req, res) => {
     const files = [fileURL1, fileURL2, fileURL3, fileURL4, fileURL5];
     for (const file of files) {
       if (file.mimetype.startsWith("image/")) {
-        await compressImage(inputPath, outputPath);
+        await compressImage(file, file);
       } else if (file.mimetype.startsWith("video/")) {
-        await compressVideo(inputPath, outputPath);
+        await compressVideo(file, file);
       } else {
         return res.status(400).send("Unsupported file type.");
       }
