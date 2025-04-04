@@ -54,9 +54,9 @@ export const createPost = async (req, res) => {
     for (const file of files) {
       const type = await fileTypeFromFile(file.path);
       if (type.mime.startsWith("image/")) {
-        await compressImage(file.path, file.path);
+        await compressImage(file.path);
       } else if (type.mime.startsWith("video/")) {
-        await compressVideo(file.path, file.path);
+        await compressVideo(file.path);
       } else {
         return res.status(400).send("Unsupported file type.");
       }
