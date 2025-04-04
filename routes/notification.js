@@ -4,7 +4,8 @@ import { createNotification, getUserNotifications } from "../controllers/notific
 const router = express.Router();
 
 // CREATE
-router.post("/", createNotification);
+// router.post("/topics/:topicName", subsribeTo);
+
 
 // READ
 router.get("/user", getUserNotifications);
