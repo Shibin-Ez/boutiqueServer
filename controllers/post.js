@@ -25,14 +25,12 @@ export const createPost = async (req, res) => {
     const userId = req.user.id;
 
     const { title, price, discount_price, description, shopId } = req.body;
-    console.log(req.body);
 
     if (!req.files.mainFile || req.files.mainFile.length === 0) {
       console.log("main file is required");
       return res.status(400).json({ message: "Main file is required" });
     }
 
-    console.log(req.files);
     const file1 = req.files.mainFile[0];
     const additionalFiles = req.files.additionalFiles
       ? req.files.additionalFiles.map((file) => file)
