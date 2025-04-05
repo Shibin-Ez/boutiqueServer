@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import ffmpeg from 'fluent-ffmpeg';
 
