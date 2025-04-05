@@ -53,6 +53,9 @@ export const createPost = async (req, res) => {
     const files = [file1, file2, file3, file4, file5];
     console.log(files);
     for (const file of files) {
+
+      if (!file) continue;
+
       const type = await fileTypeFromFile(file.path);
       if (type.mime.startsWith("image/")) {
         await compressImage(file.path);
