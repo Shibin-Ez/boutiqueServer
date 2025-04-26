@@ -1,7 +1,6 @@
 import pool from "../config/pool.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { profile } from "console";
 
 // OTP REGISTER
 export const otpRegister = async (req, res) => {
@@ -49,6 +48,7 @@ export const otpRegister = async (req, res) => {
     res.status(200).json({
       token,
       userId: result.insertId,
+      shopId: -1,
       phone_no,
       name,
     });
