@@ -19,7 +19,8 @@ export const createFollow = async (req, res) => {
     const response = await createNotification(
       shopId,
       userId,
-      notificationMessage
+      notificationMessage,
+      "follow"
     );
     console.log(response.json());
 

@@ -33,13 +33,21 @@ export const subscribeToTopic = async (token, topic) => {
 
 
 // CREATE
-export const createNotification = async (senderShopId, receiverId, content) => {
+export const createNotification = async (senderShopId, receiverId, content, type) => {
   try {
 
-    const [rows] = await pool.query(
-      `INSERT INTO UserNotification (senderShopId, receiver, content) VALUES (?, ?, ?)`,
-      [senderShopId, receiverId, content]
-    );
+    if (type === "follow") {
+      const [rows] = await pool.query(
+        `INSERT INTO ShopNotification (senderId, recieverShopId, content) VALUES (?, ?, ?)`,
+        [senderShopId, receiverId, content]
+      );
+    } else {
+      const [rows] = await pool.query(
+        `INSERT INTO UserNotification (senderShopId, receiverId, content) VALUES (?, ?, ?)`,
+        [senderShopId, receiverId, content]
+      );
+    }
+    
 
     res.status(201).json({ message: "notification added successfully" });
   } catch (err) {
