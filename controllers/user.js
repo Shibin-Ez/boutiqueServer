@@ -41,7 +41,7 @@ export const getUserFeed = async (req, res) => {
     // --- Part 1: Posts from shops followed by the user ---
     queries.push(`
       SELECT p.*, 
-        s.id AS shopId, s.name AS shopName, s.type AS shopType, 
+        s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
         COUNT(DISTINCT l.userId) AS likeCount,
         COUNT(DISTINCT c.id) AS commentCount,
@@ -60,7 +60,7 @@ export const getUserFeed = async (req, res) => {
     if (lat !== null && lng !== null) {
       queries.push(`
         SELECT p.*, 
-          s.id AS shopId, s.name AS shopName, s.type AS shopType, 
+          s.name AS shopName, s.type AS shopType, 
           CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
           COUNT(DISTINCT l.userId) AS likeCount,
           COUNT(DISTINCT c.id) AS commentCount,
@@ -79,7 +79,7 @@ export const getUserFeed = async (req, res) => {
     // --- Part 3: Recent posts (all posts, as a fallback) ---
     queries.push(`
       SELECT p.*, 
-        s.id AS shopId, s.name AS shopName, s.type AS shopType, 
+        s.name AS shopName, s.type AS shopType, 
         CONCAT('${process.env.SERVER_URL}/public/assets/shops/', s.profilePicURL) as shopProfilePicURL,
         COUNT(DISTINCT l.userId) AS likeCount,
         COUNT(DISTINCT c.id) AS commentCount,
