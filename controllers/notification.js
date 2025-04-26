@@ -49,10 +49,16 @@ export const createNotification = async (senderShopId, receiverId, content, type
     }
     
 
-    res.status(201).json({ message: "notification added successfully" });
+    return {
+      status: 201,
+      message: "Notification created successfully",
+    };
   } catch (err) {
     console.log(err);
-    res.status(500).send(err.message);
+    return {
+      status: 500,
+      message: err.message,
+    };
   }
 };
 

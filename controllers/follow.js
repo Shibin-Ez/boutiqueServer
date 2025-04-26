@@ -22,7 +22,6 @@ export const createFollow = async (req, res) => {
       notificationMessage,
       "follow"
     );
-    console.log(response.json());
 
     res
       .status(201)
