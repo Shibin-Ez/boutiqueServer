@@ -146,6 +146,16 @@ CREATE TABLE ShortURL (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+--@block Create table Salesman
+CREATE TABLE Salesman (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    phone_no VARCHAR(50) UNIQUE,
+    couponCode VARCHAR(50) UNIQUE,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+) ENGINE=InnoDB;
+
 
 --@block insert into User table
 INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123', '1234567890', 'admin');
@@ -154,10 +164,10 @@ INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123
 insert into `Like` (userId, postId) VALUES (2, 4);
 
 --@block
-select * FROM Chat;
+select * FROM Post;
 
 --@block
-DELETE FROM Post WHERE id = 3
+DELETE FROM Post;   
 
 --@block
 ALTER TABLE User ADD COLUMN profilePicURL VARCHAR(255) DEFAULT 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';

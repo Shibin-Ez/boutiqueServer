@@ -68,7 +68,10 @@ app.post(
   authenticate,
   upload.fields([
     { name: "mainFile", maxCount: 1 },
-    { name: "additionalFiles", maxCount: 4 },
+    { name: "additionalFiles1", maxCount: 1 },
+    { name: "additionalFiles2", maxCount: 1 },
+    { name: "additionalFiles3", maxCount: 1 },
+    { name: "additionalFiles4", maxCount: 1 },
   ]),
   createPost
 );
@@ -173,6 +176,6 @@ io.on("connection", (socket) => {
 });
 
 // START SERVER
-server.listen(PORT, "0.0.0.0", () =>
+server.listen(PORT, "::", () =>
   console.log(`Server is running on port ${PORT}`)
 );

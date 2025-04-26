@@ -31,11 +31,13 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ message: "Main file is required" });
     }
 
+    console.log(req.files);
+
     const file1 = req.files.mainFile[0];
-    const additionalFiles = req.files.additionalFiles
-      ? req.files.additionalFiles.map((file) => file)
-      : [];
-    const [file2, file3, file4, file5] = additionalFiles;
+    const file2 = req.files.additionalFiles1 ? req.files.additionalFiles1[0] : null;
+    const file3 = req.files.additionalFiles2 ? req.files.additionalFiles2[0] : null;
+    const file4 = req.files.additionalFiles3 ? req.files.additionalFiles3[0] : null;
+    const file5 = req.files.additionalFiles4 ? req.files.additionalFiles4[0] : null;
 
     // check if user is the owner of the shop
     const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [

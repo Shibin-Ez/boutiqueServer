@@ -8,6 +8,7 @@ export const createFollow = async (req, res) => {
     const shopId = req.params.shopId;
 
     const { userId, userName } = req.body;
+    console.log(req.body);
 
     const [rows] = await pool.query(
       `INSERT INTO Follow (userId, shopId) VALUES (?, ?)`,
