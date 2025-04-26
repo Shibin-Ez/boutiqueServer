@@ -38,7 +38,7 @@ export const createNotification = async (senderShopId, receiverId, content, type
 
     if (type === "follow") {
       const [rows] = await pool.query(
-        `INSERT INTO ShopNotification (senderId, recieverShopId, content) VALUES (?, ?, ?)`,
+        `INSERT INTO ShopNotification (senderId, receiverShopId, content) VALUES (?, ?, ?)`,
         [senderShopId, receiverId, content]
       );
     } else {
