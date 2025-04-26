@@ -156,6 +156,18 @@ CREATE TABLE Salesman (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 ) ENGINE=InnoDB;
 
+--@block Create table Report
+CREATE TABLE Report (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT NOT NULL,
+    postId INT NOT NULL,
+    reason TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (postId) REFERENCES Post(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 
 --@block insert into User table
 INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123', '1234567890', 'admin');

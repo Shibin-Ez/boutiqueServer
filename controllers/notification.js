@@ -29,12 +29,19 @@ export const subscribeToTopics = async (req, res) => {
     // Subscribe to his own topic
     const userTopic = `user_${userId}`;
     const userSubscription = await subscribeToTopic(deviceToken, userTopic);
-    if (!userSubscription) {
-      return res
-        .status(500)
-        .json({ error: "Failed to subscribe to user topic" });
+    if (userSubscription) console.log("Subscribed to self " + userTopic);
+
+    // Subscribe to his own shop topic
+    const [shop] = await pool.query(`SELECT id FROM Shop WHERE userId = ?`, [
+      userId,
+    ]);
+    if (shop.length) {
+      const shopTopic = `myshop_${shop[0].id}`;
+      const shopSubscription = await subscribeToTopic(deviceToken, shopTopic);
+      if (shopSubscription) console.log("Subscribed to self " + shopTopic);
+    } else {
+      console.log("No shop found for user " + userId);
     }
-    console.log("Subscribed to self " + userTopic);
 
     // Subscribe to followed shops
     const [followedShops] = await pool.query(
@@ -83,13 +90,27 @@ export const unsubscribeFromTopics = async (req, res) => {
 
     // Unsubscribe from his own topic
     const userTopic = `user_${userId}`;
-    const userUnsubscription = await unsubscribeFromTopic(deviceToken, userTopic);
-    if (!userUnsubscription) {
-      return res
-        .status(500)
-        .json({ error: "Failed to unsubscribe from user topic" });
+    const userUnsubscription = await unsubscribeFromTopic(
+      deviceToken,
+      userTopic
+    );
+    if (userUnsubscription) console.log("Unsubscribed from self " + userTopic);
+
+    // Unsubscribe from his own shop topic
+    const [shop] = await pool.query(`SELECT id FROM Shop WHERE userId = ?`, [
+      userId,
+    ]);
+    if (shop.length) {
+      const shopTopic = `myshop_${shop[0].id}`;
+      const shopUnsubscription = await unsubscribeFromTopic(
+        deviceToken,
+        shopTopic
+      );
+      if (shopUnsubscription)
+        console.log("Unsubscribed from self " + shopTopic);
+    } else {
+      console.log("No shop found for user " + userId);
     }
-    console.log("Unsubscribed from self " + userTopic);
 
     // Unsubscribe from followed shops
     const [followedShops] = await pool.query(
@@ -100,11 +121,16 @@ export const unsubscribeFromTopics = async (req, res) => {
     let count = 0;
     for (const shop of followedShops) {
       const shopTopic = `shop_${shop.shopId}`;
-      const shopUnsubscription = await unsubscribeFromTopic(deviceToken, shopTopic);
+      const shopUnsubscription = await unsubscribeFromTopic(
+        deviceToken,
+        shopTopic
+      );
       if (shopUnsubscription) count++;
     }
 
-    console.log(`Unsubscribed from ${count}/${followedShops.length} shop topics`);
+    console.log(
+      `Unsubscribed from ${count}/${followedShops.length} shop topics`
+    );
     res.status(200).json({
       message: `Unsubscribed from ${count}/${followedShops.length} shop topics`,
     });
@@ -114,6 +140,30 @@ export const unsubscribeFromTopics = async (req, res) => {
   }
 };
 
+export const sendNotificationToTopic = async (
+  topic,
+  title,
+  body,
+  data = {}
+) => {
+  try {
+    const message = {
+      notification: {
+        title,
+        body,
+      },
+      data,
+      topic, // Topic name without `/topics/` prefix
+    };
+
+    const response = await admin.messaging().send(message);
+    console.log("Notification sent successfully:", response);
+    return true;
+  } catch (error) {
+    console.error("Failed to send notification:", error);
+    return false;
+  }
+};
 
 // CREATE
 export const createNotification = async (
