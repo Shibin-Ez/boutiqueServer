@@ -1,9 +1,12 @@
 import pool from "../config/pool.js";
 import admin from "firebase-admin";
+import axios from "axios";
 
 // FUNCTIONS
 async function getAccessToken() {
-  const accessToken = await admin.credential.applicationDefault().getAccessToken();
+  const accessToken = await admin.credential
+    .applicationDefault()
+    .getAccessToken();
   return accessToken.access_token;
 }
 
@@ -17,7 +20,7 @@ export const subscribeToTopic = async (token, topic) => {
   };
 
   const headers = {
-    "Authorization": `Bearer ${accessToken}`,
+    Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
   };
 
@@ -29,13 +32,59 @@ export const subscribeToTopic = async (token, topic) => {
     console.error("Subscription failed:", error.response.data);
     return false;
   }
-}
+};
 
+export const subscribeToTopics = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { deviceToken } = req.body;
+    console.log(req.body);
+
+    if (!deviceToken) {
+      return res.status(400).json({ error: "Device token is required" });
+    }
+
+    // Subscribe to his own topic
+    const userTopic = `user_${userId}`;
+    const userSubscription = await subscribeToTopic(deviceToken, userTopic);
+    if (!userSubscription) {
+      return res
+        .status(500)
+        .json({ error: "Failed to subscribe to user topic" });
+    }
+    console.log("Subscribed to self " + userTopic);
+
+    // Subscribe to followed shops
+    const [followedShops] = await pool.query(
+      `SELECT shopId FROM Follow WHERE userId = ?`,
+      [userId]
+    );
+
+    let count = 0;
+    for (const shop of followedShops) {
+      const shopTopic = `shop_${shop.shopId}`;
+      const shopSubscription = await subscribeToTopic(deviceToken, shopTopic);
+      if (shopSubscription) count++;
+    }
+
+    console.log(`Subscribed to ${count}/${followedShops.length} shop topics`);
+    res.status(200).json({
+      message: `Subscribed to ${count}/${followedShops.length} shop topics`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
 
 // CREATE
-export const createNotification = async (senderShopId, receiverId, content, type) => {
+export const createNotification = async (
+  senderShopId,
+  receiverId,
+  content,
+  type
+) => {
   try {
-
     if (type === "follow") {
       const [rows] = await pool.query(
         `INSERT INTO ShopNotification (senderId, receiverShopId, content) VALUES (?, ?, ?)`,
@@ -47,7 +96,6 @@ export const createNotification = async (senderShopId, receiverId, content, type
         [senderShopId, receiverId, content]
       );
     }
-    
 
     return {
       status: 201,

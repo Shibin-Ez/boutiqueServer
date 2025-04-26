@@ -1,5 +1,100 @@
 import pool from "../config/pool.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+
+// OTP REGISTER
+export const otpRegister = async (req, res) => {
+  try {
+    const { accessToken, phone_no, name, password} = req.body;
+    console.log(req.body);
+
+    if (!accessToken)
+      return res.status(400).json({ error: "Token is required" });
+
+    const response = await fetch(
+      "https://control.msg91.com/api/v5/widget/verifyAccessToken",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          authkey: process.env.MSG91_AUTH_KEY,
+          "access-token": accessToken,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.log("Invalid token");
+      return res.status(400).json({ error: "Invalid token" });
+    }
+
+    // encrypt password
+    const encryptedPassword = await bcrypt.hash(password, 10);
+
+    const [result] = await pool.query(
+      `INSERT INTO User (phone_no, name, passwordHash) VALUES (?, ?, ?)`,
+      [phone_no, name, encryptedPassword]
+    );
+
+    // Generate JWT token
+    const token = jwt.sign({ id: result.insertId, phone_no }, process.env.JWT_SECRET);
+    console.log(token);
+
+    res.status(200).json({
+      token,
+      userId: result.insertId,
+      phone_no,
+      name,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Authentication failed" });
+  }
+};
+
+// PASSWORD LOGIN
+export const passwordLogin = async (req, res) => {
+  try {
+    const { phone_no, password } = req.body;
+    console.log(req.body);
+
+    if (!phone_no || !password)
+      return res.status(400).json({ error: "Phone number and password are required" });
+
+    const [users] = await pool.query(`SELECT * FROM User WHERE phone_no = ?`, [
+      phone_no,
+    ]);
+
+    if (!users.length) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, users[0].passwordHash);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: "Invalid password" });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: users[0].id, phone_no }, process.env.JWT_SECRET);
+    console.log(token);
+
+    res.status(200).json({
+      token,
+      userId: users[0].id,
+      phone_no,
+      name: users[0].name,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Authentication failed" });
+  }
+};
 
 // SOCIAL LOGIN
 export const googleAuth = async (req, res) => {
@@ -52,16 +147,14 @@ export const googleAuth = async (req, res) => {
 
     console.log(token);
 
-    res
-      .status(200)
-      .json({
-        token,
-        userId: users[0].id,
-        shopId: users[0].shopId,
-        name,
-        email,
-        profilePicURL: users[0].profilePicURL,
-      });
+    res.status(200).json({
+      token,
+      userId: users[0].id,
+      shopId: users[0].shopId,
+      name,
+      email,
+      profilePicURL: users[0].profilePicURL,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Authentication failed" });
