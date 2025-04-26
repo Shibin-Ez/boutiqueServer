@@ -36,6 +36,7 @@ export const subscribeToTopic = async (token, topic) => {
 
 export const subscribeToTopics = async (req, res) => {
   try {
+    console.log("Subscribing to topics");
     const userId = req.params.userId;
     const { deviceToken } = req.body;
     console.log(req.body);
