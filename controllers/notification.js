@@ -1,18 +1,18 @@
 import pool from "../config/pool.js";
 import admin from "firebase-admin";
 import axios from "axios";
-import { getAccessToken } from "../config/notification.js";
 
 // FUNCTIONS
-// async function getAccessToken() {
-//   const accessToken = await admin.credential
-//     .applicationDefault()
-//     .getAccessToken();
-//   return accessToken.access_token;
-// }
+async function getAccessToken() {
+  const accessToken = await admin.credential
+    .applicationDefault()
+    .getAccessToken();
+  return accessToken.access_token;
+}
 
 export const subscribeToTopic = async (token, topic) => {
   const accessToken = await getAccessToken(); // Get Firebase Admin token
+  console.log("Access token: ", accessToken);
 
   const url = "https://iid.googleapis.com/iid/v1:batchAdd";
   const payload = {

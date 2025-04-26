@@ -7,6 +7,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { Server } from "socket.io";
+import admin from "firebase-admin";
 
 import shopRoutes from "./routes/shop.js";
 import authRoutes from "./routes/auth.js";
@@ -173,6 +174,12 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
   });
+});
+
+// Initialize firebase admin SDK
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
 });
 
 // START SERVER
