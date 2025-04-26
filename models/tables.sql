@@ -232,3 +232,6 @@ AND c.timestamp = (
        OR (c2.receiverId = u.id AND c2.senderId = 2)
 )
 ORDER BY c.timestamp DESC;
+
+--@block
+SELECT * FROM Post;

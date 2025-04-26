@@ -1,11 +1,11 @@
 import express from "express"
-import { createNotification, getUserNotifications, subscribeToTopics } from "../controllers/notification.js";
+import { createNotification, getUserNotifications, subscribeToTopics, unsubscribeFromTopics } from "../controllers/notification.js";
 
 const router = express.Router();
 
 // CREATE
-router.post("/user/:userId", subscribeToTopics);
-
+router.post("/subscribe/user/:userId", subscribeToTopics);
+router.post("/unsubscribe/user/:userId", unsubscribeFromTopics);
 
 // READ
 router.get("/user", getUserNotifications);

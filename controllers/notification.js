@@ -3,34 +3,14 @@ import admin from "firebase-admin";
 import axios from "axios";
 
 // FUNCTIONS
-async function getAccessToken() {
-  const accessToken = await admin.credential
-    .applicationDefault()
-    .getAccessToken();
-  return accessToken.access_token;
-}
-
 export const subscribeToTopic = async (token, topic) => {
-  const accessToken = await getAccessToken(); // Get Firebase Admin token
-  console.log("Access token: ", accessToken);
-
-  const url = "https://iid.googleapis.com/iid/v1:batchAdd";
-  const payload = {
-    to: `/topics/${topic}`,
-    registration_tokens: [token], // The FCM token of the mobile device
-  };
-
-  const headers = {
-    Authorization: `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
-  };
-
   try {
-    const response = await axios.post(url, payload, { headers });
-    console.log("Subscribed successfully:", response.data);
+    // const response = await axios.post(url, {}, { headers });
+    const response = await admin.messaging().subscribeToTopic(token, topic);
+    console.log("Subscribed successfully:", response);
     return true;
   } catch (error) {
-    console.error("Subscription failed:", error.response.data);
+    console.error("Subscription failed:", error.response);
     return false;
   }
 };
@@ -78,6 +58,62 @@ export const subscribeToTopics = async (req, res) => {
     res.status(500).send({ message: err.message });
   }
 };
+
+export const unsubscribeFromTopic = async (token, topic) => {
+  try {
+    const response = await admin.messaging().unsubscribeFromTopic(token, topic);
+    console.log("Unsubscribed successfully:", response);
+    return true;
+  } catch (error) {
+    console.error("Unsubscription failed:", error.response || error.message);
+    return false;
+  }
+};
+
+export const unsubscribeFromTopics = async (req, res) => {
+  try {
+    console.log("Unsubscribing from topics");
+    const userId = req.params.userId;
+    const { deviceToken } = req.body;
+    console.log(req.body);
+
+    if (!deviceToken) {
+      return res.status(400).json({ error: "Device token is required" });
+    }
+
+    // Unsubscribe from his own topic
+    const userTopic = `user_${userId}`;
+    const userUnsubscription = await unsubscribeFromTopic(deviceToken, userTopic);
+    if (!userUnsubscription) {
+      return res
+        .status(500)
+        .json({ error: "Failed to unsubscribe from user topic" });
+    }
+    console.log("Unsubscribed from self " + userTopic);
+
+    // Unsubscribe from followed shops
+    const [followedShops] = await pool.query(
+      `SELECT shopId FROM Follow WHERE userId = ?`,
+      [userId]
+    );
+
+    let count = 0;
+    for (const shop of followedShops) {
+      const shopTopic = `shop_${shop.shopId}`;
+      const shopUnsubscription = await unsubscribeFromTopic(deviceToken, shopTopic);
+      if (shopUnsubscription) count++;
+    }
+
+    console.log(`Unsubscribed from ${count}/${followedShops.length} shop topics`);
+    res.status(200).json({
+      message: `Unsubscribed from ${count}/${followedShops.length} shop topics`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
 
 // CREATE
 export const createNotification = async (
