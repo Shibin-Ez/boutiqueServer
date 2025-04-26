@@ -1,6 +1,7 @@
 import pool from "../config/pool.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { profile } from "console";
 
 // OTP REGISTER
 export const otpRegister = async (req, res) => {
@@ -80,6 +81,16 @@ export const passwordLogin = async (req, res) => {
       return res.status(400).json({ error: "Invalid password" });
     }
 
+    // check if he is a seller
+    const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
+      users[0].id,
+    ]);
+    if (shops.length) {
+      users[0].shopId = shops[0].id;
+    } else {
+      users[0].shopId = -1;
+    }
+
     // Generate JWT token
     const token = jwt.sign({ id: users[0].id, phone_no }, process.env.JWT_SECRET);
     console.log(token);
@@ -87,7 +98,9 @@ export const passwordLogin = async (req, res) => {
     res.status(200).json({
       token,
       userId: users[0].id,
+      shopId: users[0].shopId,
       phone_no,
+      profilePicURL: users[0].profilePicURL,
       name: users[0].name,
     });
   } catch (err) {
