@@ -16,14 +16,37 @@ export const createShop = async (req, res) => {
     //   return res.status(400).json({ message: "User already has a shop" });
     // }
 
-    const { name, type, address, whatsapp_no, latitude, longitude } = req.body;
+    const {
+      name,
+      type,
+      address,
+      whatsapp_no,
+      latitude,
+      longitude,
+      salesmanCode,
+    } = req.body;
 
     console.log(req.file);
     const profilePicURL = req.file ? req.file.filename : null;
 
+    let salesman = null;
+
+    if (salesmanCode) {
+      const [salesmen] = await pool.query(
+        `SELECT * FROM Salesman WHERE code = ?`,
+        [salesmanCode]
+      );
+
+      if (!salesmen.length) {
+        return res.status(400).json({ message: "Invalid salesman code" });
+      }
+
+      salesman = salesmen[0];
+    }
+
     const [rows] = await pool.query(
-      `INSERT INTO Shop (name, type, profilePicURL, userId, address, whatsapp_no, location) 
-      VALUES (?, ?, ?, ?, ?, ?, ST_GeomFromText(?))`,
+      `INSERT INTO Shop (name, type, profilePicURL, userId, address, whatsapp_no, location, code) 
+      VALUES (?, ?, ?, ?, ?, ?, ST_GeomFromText(?)), ?`,
       [
         name,
         type,
@@ -32,6 +55,7 @@ export const createShop = async (req, res) => {
         address,
         whatsapp_no,
         `POINT(${longitude} ${latitude})`,
+        salesman ? salesman.id : null,
       ]
     );
 
@@ -103,7 +127,6 @@ export const getShopDetails = async (req, res) => {
 
 export const getShopDetailsFromUserId = async (userId) => {
   try {
-
     const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
       userId,
     ]);

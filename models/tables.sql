@@ -30,8 +30,10 @@ CREATE TABLE Shop (
     whatsapp_no VARCHAR(50) NOT NULL,
     location POINT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    salesmanId INT DEFAULT NULL,
     FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE,
     SPATIAL INDEX idx_shop_location (location),
+    INDEX idx_shop_salesmanId (salesmanId),
     INDEX idx_shop_userId (userId)
 ) ENGINE=InnoDB;
 
@@ -152,7 +154,7 @@ CREATE TABLE Salesman (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
     phone_no VARCHAR(50) UNIQUE,
-    couponCode VARCHAR(50) UNIQUE,
+    code VARCHAR(50) UNIQUE,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 ) ENGINE=InnoDB;
 
@@ -169,6 +171,7 @@ CREATE TABLE Report (
 ) ENGINE=InnoDB;
 
 
+
 --@block insert into User table
 INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123', '1234567890', 'admin');
 
@@ -182,7 +185,7 @@ select * FROM Post;
 DELETE FROM Post;   
 
 --@block
-ALTER TABLE User ADD COLUMN profilePicURL VARCHAR(255) DEFAULT 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y';
+ALTER TABLE Shop ADD COLUMN salesmanId INT DEFAULT NULL;
 
 --@block
 SHOW CREATE TABLE User;
