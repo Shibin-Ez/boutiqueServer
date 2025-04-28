@@ -1,68 +1,72 @@
-import pool from '../models/pool.js';
+import pool from "../models/pool.js";
 
 // CREATE
 export const createSalesman = async (req, res) => {
   try {
     const { name, email, phone, code } = req.body;
 
-    if (!name || !code) {
-      return res.status(400).json({ message: 'Name and code are required' });
+    // change to to upper case
+    const upperCode = code && code.toUpperCase();
+
+    if (!name || !upperCode) {
+      return res.status(400).json({ message: "Name and code are required" });
     }
 
     // Optional: validate email format if email is provided
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     const [result] = await pool.query(
       `INSERT INTO Salesman (name, email, phone, code) VALUES (?, ?, ?, ?)`,
-      [name, email, phone, code]
+      [name, email, phone, upperCode]
     );
     const salesmanId = result.insertId;
 
     res.status(201).json({
-      message: 'Salesman created successfully',
+      message: "Salesman created successfully",
       salesman: {
         id: salesmanId,
         name,
         email,
         phone,
-        code,
+        code: upperCode,
       },
     });
   } catch (err) {
     console.log(err);
 
     // Handling Duplicate Entry Error
-    if (err.code === 'ER_DUP_ENTRY') {
+    if (err.code === "ER_DUP_ENTRY") {
       // The error message typically looks like: "Duplicate entry 'XYZ' for key 'Salesman.code'"
       if (err.message.includes("'code'")) {
-        return res.status(400).json({ message: 'Salesman code already exists' });
+        return res
+          .status(400)
+          .json({ message: "Salesman code already exists" });
       } else if (err.message.includes("'email'")) {
-        return res.status(400).json({ message: 'Salesman email already exists' });
-      } 
+        return res
+          .status(400)
+          .json({ message: "Salesman email already exists" });
+      }
       // fallback
-      return res.status(400).json({ message: 'Duplicate entry detected' });
+      return res.status(400).json({ message: "Duplicate entry detected" });
     }
-    
 
     res.status(500).send({ message: err.message });
   }
-}
+};
 
 // READ
 export const getSalesmen = async (req, res) => {
   try {
-    const [salesmen] = await pool.query(
-      `
-      SELECT 
-      `
-    );
+    const [salesmen] = await pool.query(`SELECT * FROM Salesman`);
+
+    res.status(200).json(salesmen);
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });
   }
-}
+};
 
 export const getSalesman = async (req, res) => {
   try {
@@ -76,7 +80,7 @@ export const getSalesman = async (req, res) => {
     );
 
     if (salesman.length === 0) {
-      return res.status(404).json({ message: 'Salesman not found' });
+      return res.status(404).json({ message: "Salesman not found" });
     }
 
     res.status(200).json(salesman[0]);
@@ -84,4 +88,4 @@ export const getSalesman = async (req, res) => {
     console.log(err);
     res.status(500).send({ message: err.message });
   }
-}
+};

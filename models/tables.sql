@@ -32,6 +32,7 @@ CREATE TABLE Shop (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     salesmanId INT DEFAULT NULL,
     FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (salesmanId) REFERENCES Salesman(id) ON DELETE SET NULL,
     SPATIAL INDEX idx_shop_location (location),
     INDEX idx_shop_salesmanId (salesmanId),
     INDEX idx_shop_userId (userId)
@@ -153,8 +154,8 @@ CREATE TABLE Salesman (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
-    phone_no VARCHAR(50) UNIQUE,
-    code VARCHAR(50) UNIQUE,
+    phone_no VARCHAR(20) UNIQUE,
+    code VARCHAR(10) UNIQUE,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 ) ENGINE=InnoDB;
 
