@@ -32,6 +32,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.json({ limit: "220mb" }));
+app.use(express.urlencoded({ limit: '220mb', extended: true }));
 // app.use(express.json());
 app.use(helmet()); // if not used with helmet, cors will not work
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));

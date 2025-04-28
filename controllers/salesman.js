@@ -61,7 +61,7 @@ export const getSalesmen = async (req, res) => {
   try {
     const [salesmen] = await pool.query(`SELECT * FROM Salesman`);
 
-    res.status(200).json(salesmen);
+    res.status(200).json(salesmen); 
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });
