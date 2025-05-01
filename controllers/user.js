@@ -51,10 +51,13 @@ export const getUserFeed = async (req, res) => {
       JOIN Follow f ON p.shopId = f.shopId
       LEFT JOIN \`Like\` l ON p.id = l.postId
       LEFT JOIN Comment c ON p.id = c.postId
-      WHERE f.userId = ?
+      WHERE f.userId = ? 
+        AND NOT EXISTS (
+          SELECT 1 FROM Report r WHERE r.postId = p.id AND r.userId = ?
+        )
       GROUP BY p.id
     `);
-    params.push(userId, userId);
+    params.push(userId, userId, userId);
 
     // --- Part 2: Posts from nearby shops (if location is provided) ---
     if (lat !== null && lng !== null) {
@@ -70,10 +73,13 @@ export const getUserFeed = async (req, res) => {
         LEFT JOIN \`Like\` l ON p.id = l.postId
         LEFT JOIN Comment c ON p.id = c.postId
         WHERE ST_Distance_Sphere(s.location, POINT(?, ?)) < ?
+          AND NOT EXISTS (
+            SELECT 1 FROM Report r WHERE r.postId = p.id AND r.userId = ?
+          )
         GROUP BY p.id
       `);
       // Note: POINT expects longitude first, then latitude.
-      params.push(userId, lng, lat, radius);
+      params.push(userId, lng, lat, radius, userId);
     }
 
     // --- Part 3: Recent posts (all posts, as a fallback) ---
@@ -88,6 +94,9 @@ export const getUserFeed = async (req, res) => {
       JOIN Shop s ON p.shopId = s.id
       LEFT JOIN \`Like\` l ON p.id = l.postId
       LEFT JOIN Comment c ON p.id = c.postId
+      WHERE NOT EXISTS (
+        SELECT 1 FROM Report r WHERE r.postId = p.id AND r.userId = ?
+      )
       GROUP BY p.id
     `);
     params.push(userId);
@@ -109,20 +118,27 @@ export const getUserFeed = async (req, res) => {
 
     const updatedPosts = posts.map((post) => ({
       ...post,
-      fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL1}`,
+      fileURL1: `${process.env.SERVER_URL}/posts/file/${post.fileURL1}`,
       fileURL2:
         post.fileURL2 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL2}`,
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL2}`,
       fileURL3:
         post.fileURL3 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL3}`,
       fileURL4:
         post.fileURL4 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL4}`,
       fileURL5:
         post.fileURL5 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL5}`,
       isLiked: post.isLiked == 1,
+      fileTypes: [
+        "image",
+        post.fileURL2 && post.fileURL2.split(".").pop() === "mp4" ? "video" : "image",
+        post.fileURL3 && post.fileURL3.split(".").pop() === "mp4" ? "video" : "image",
+        post.fileURL4 && post.fileURL4.split(".").pop() === "mp4" ? "video" : "image",
+        post.fileURL5 && post.fileURL5.split(".").pop() === "mp4" ? "video" : "image",
+      ],
     }));
 
     res.status(200).json(updatedPosts);

@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { compressImage, compressVideo } from "../functions/media.js";
 import { fileTypeFromFile } from "file-type";
+import { fileURLToPath } from "url";
 
 const generateThumbnail = (videoPath, thumbnailPath) => {
   return new Promise((resolve, reject) => {
@@ -140,7 +141,14 @@ export const getPost = async (req, res) => {
       fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
       fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
       fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
-      isLiked
+      isLiked,
+      fileTypes: [
+        "image",
+        post.fileURL2 && post.fileURL2.split(".").pop() === "mp4" ? "video" : "image",
+        post.fileURL3 && post.fileURL3.split(".").pop() === "mp4" ? "video" : "image",
+        post.fileURL4 && post.fileURL4.split(".").pop() === "mp4" ? "video" : "image",
+        post.fileURL5 && post.fileURL5.split(".").pop() === "mp4" ? "video" : "image",
+      ]
     };
 
     res.status(200).json(updatedPost);
@@ -209,6 +217,41 @@ export const getPostsFromShop = async (req, res) => {
     );
 
     res.status(200).json(updatedPosts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+};
+
+export const getFile = async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const { userId, postId } = req.query;
+
+    // Check if user already reported the post
+    if (userId && postId) {
+      const [rows] = await pool.query(
+        `SELECT * FROM Report WHERE userId = ? AND postId = ?`,
+        [userId, postId]
+      );
+
+      if (rows.length) {
+        return res.status(403).send("User has reported the post");
+      }
+    }
+
+    // Construct absolute path using __dirname
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const filePath = path.join(__dirname, '..', 'public', 'assets', 'posts', filename);
+    console.log(filePath);
+
+    // Check if the file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send("File not found");
+    }
+
+    res.sendFile(filePath);
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);

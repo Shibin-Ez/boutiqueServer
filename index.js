@@ -58,8 +58,8 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const timestamp = Date.now();
     const randomNumber = Math.floor(100000 + Math.random() * 900000);
-    const fileExtension = file.originalname.split(".").pop();
-    cb(null, `${timestamp}-${randomNumber}`);
+    const fileExtension = file.mimetype.split("/")[1];
+    cb(null, `${timestamp}-${randomNumber}.${fileExtension}`);
   },
 });
 const upload = multer({ storage });
@@ -91,7 +91,7 @@ app.use("/share", shortURLRoutes);
 app.use("/follow", followRoutes);
 app.use("/chat", chatRoutes);
 app.use("/notification", notificationRoutes);
-app.use("/report", reportRoutes);
+app.use("/reports", reportRoutes);
 
 // CUSTOM ROUTES
 app.get("/config/notification", async (req, res) => {

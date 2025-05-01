@@ -4,7 +4,7 @@ import { createReport, getReportsForPost } from '../controllers/report.js';
 const router = express.Router();
 
 // CREATE
-router.post("/", createReport);
+router.post("/post/", createReport);
 
 // READ
 router.get("/post/:postId", getReportsForPost);

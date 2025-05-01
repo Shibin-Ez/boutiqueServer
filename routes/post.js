@@ -1,5 +1,5 @@
 import express from "express";
-import { getPost, getPostsFromShop } from "../controllers/post.js";
+import { getFile, getPost, getPostsFromShop } from "../controllers/post.js";
 
 const router = express.Router();
 
@@ -9,5 +9,6 @@ const router = express.Router();
 // READ
 router.get("/post/:id", getPost);
 router.get("/shop/:shopId", getPostsFromShop);
+router.get("/file/:filename", getFile);
 
 export default router;

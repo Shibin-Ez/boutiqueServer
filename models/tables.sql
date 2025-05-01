@@ -170,8 +170,8 @@ CREATE TABLE Report (
     FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (postId) REFERENCES Post(id) ON DELETE CASCADE,
 
-    UNIQUE KEY (postId, userId)
-    CREATE INDEX idx_report_userId (userId),
+    UNIQUE KEY (postId, userId),
+    INDEX idx_report_userId (userId)
 ) ENGINE=InnoDB;
 
 
