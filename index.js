@@ -20,6 +20,7 @@ import commentRoutes from "./routes/comment.js";
 import followRoutes from "./routes/follow.js";
 import chatRoutes from "./routes/chat.js";
 import notificationRoutes from "./routes/notification.js";
+import reportRoutes from "./routes/report.js";
 import { createPost } from "./controllers/post.js";
 import { createShop, getShopDetails, getShopDetailsFromUserId } from "./controllers/shop.js";
 import { authenticate } from "./middlewares/authMiddleware.js";
@@ -31,6 +32,16 @@ import { getUser } from "./controllers/user.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
+app.use(express.json({ limit: "220mb" }));
+app.use(express.urlencoded({ limit: '220mb', extended: true }));
+app.use(helmet()); // if not used with helmet, cors will not work
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(morgan("common"));
+app.use(cors());
+app.use("/public", express.static("public"));
+
+// If you're behind a proxy, this will tell Express to use the X-Forwarded-For header.
+app.set("trust proxy", true);
 
 // FILE STORAGE
 const storage = multer.diskStorage({
@@ -53,16 +64,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// If you're behind a proxy, this will tell Express to use the X-Forwarded-For header.
-app.set("trust proxy", true);
-
-// MIDDLEWARES
-app.use(helmet()); // if not used with helmet, cors will not work
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(morgan("common"));
-app.use(cors());
-app.use("/public", express.static("public"));
-
 // ROUTES WITH FILES
 app.post("/shops", authenticate, upload.single("profilePic"), createShop);
 app.post(
@@ -78,10 +79,6 @@ app.post(
   createPost
 );
 
-// BODY PARSER
-app.use(express.json({ limit: "220mb" }));
-app.use(express.urlencoded({ limit: '220mb', extended: true }));
-
 // ROUTES
 app.use("/shops", shopRoutes);
 app.use("/auth", authRoutes);
@@ -94,6 +91,7 @@ app.use("/share", shortURLRoutes);
 app.use("/follow", followRoutes);
 app.use("/chat", chatRoutes);
 app.use("/notification", notificationRoutes);
+app.use("/report", reportRoutes);
 
 // CUSTOM ROUTES
 app.get("/config/notification", async (req, res) => {
