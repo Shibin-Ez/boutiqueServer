@@ -136,11 +136,11 @@ export const getPost = async (req, res) => {
 
     const updatedPost = {
       ...post,
-      fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL1}`,
-      fileURL2: post.fileURL2 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL2}`,
-      fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL3}`,
-      fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL4}`,
-      fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/public/assets/posts/${post.fileURL5}`,
+      fileURL1: `${process.env.SERVER_URL}/posts/file/${post.fileURL1}`,
+      fileURL2: post.fileURL2 && `${process.env.SERVER_URL}/posts/file/${post.fileURL2}`,
+      fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/posts/file/${post.fileURL3}`,
+      fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/posts/file/${post.fileURL4}`,
+      fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/posts/file/${post.fileURL5}`,
       isLiked,
       fileTypes: [
         "image",
@@ -161,8 +161,15 @@ export const getPost = async (req, res) => {
 export const getPostsFromShop = async (req, res) => {
   try {
     const { shopId } = req.params;
-    const [posts] = await pool.query(`SELECT * FROM Post WHERE shopId = ?`, [
-      shopId,
+    const { userId } = req.query || -1;
+    
+    const [posts] = await pool.query(`
+      SELECT * FROM Post p
+      WHERE p.shopId = ?
+        AND NOT EXISTS (
+          SELECT 1 FROM Report r WHERE r.userId = ? AND r.postId = p.id
+        )`, [
+      shopId, userId
     ]);
 
     const updatedPosts = await Promise.all(

@@ -99,7 +99,7 @@ export const getUserFeed = async (req, res) => {
       )
       GROUP BY p.id
     `);
-    params.push(userId);
+    params.push(userId, userId);
 
     // Combine the queries using UNION. (Duplicates may occur, so you might need to handle them if necessary.)
     const unionQuery = queries.join(" UNION ");

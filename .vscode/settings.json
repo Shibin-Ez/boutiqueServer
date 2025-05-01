@@ -11,7 +11,8 @@
       "driver": "MySQL",
       "name": "botiqueDB",
       "database": "botiqueDB",
-      "username": "root"
+      "username": "root",
+      "password": "20140000"
     }
   ]
 }
