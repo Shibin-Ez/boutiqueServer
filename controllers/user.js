@@ -134,10 +134,10 @@ export const getUserFeed = async (req, res) => {
       isLiked: post.isLiked == 1,
       fileTypes: [
         "image",
-        post.fileURL2 && post.fileURL2.split(".").pop() === "mp4" ? "video" : "image",
-        post.fileURL3 && post.fileURL3.split(".").pop() === "mp4" ? "video" : "image",
-        post.fileURL4 && post.fileURL4.split(".").pop() === "mp4" ? "video" : "image",
-        post.fileURL5 && post.fileURL5.split(".").pop() === "mp4" ? "video" : "image",
+        post.fileURL2 ? (post.fileURL2.split(".").pop() === "mp4" ? "video" : "image") : null,
+        post.fileURL3 ? (post.fileURL3.split(".").pop() === "mp4" ? "video" : "image") : null,
+        post.fileURL4 ? (post.fileURL4.split(".").pop() === "mp4" ? "video" : "image") : null,
+        post.fileURL5 ? (post.fileURL5.split(".").pop() === "mp4" ? "video" : "image") : null,
       ],
     }));
 
