@@ -156,7 +156,7 @@ CREATE TABLE Salesman (
     email VARCHAR(255) UNIQUE,
     phone_no VARCHAR(20) UNIQUE,
     code VARCHAR(10) UNIQUE,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 --@block Create table Report
