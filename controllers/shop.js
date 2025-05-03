@@ -46,7 +46,7 @@ export const createShop = async (req, res) => {
 
     const [rows] = await pool.query(
       `INSERT INTO Shop (name, type, profilePicURL, userId, address, whatsapp_no, location, salesmanId) 
-      VALUES (?, ?, ?, ?, ?, ?, ST_GeomFromText(?)), ?`,
+      VALUES (?, ?, ?, ?, ?, ?, ST_GeomFromText(?), ?)`,
       [
         name,
         type,
