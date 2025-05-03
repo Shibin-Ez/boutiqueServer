@@ -124,6 +124,9 @@ const io = new Server(server, {
 });
 // app.use("/chat", chatRoutes);
 
+// GLOBAL DATA STRUCTURES
+const activeUsers = new Map(); // Store active users
+
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 

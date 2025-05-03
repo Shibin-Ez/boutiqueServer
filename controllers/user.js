@@ -167,3 +167,26 @@ export const getUserLikes = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+export const checkPhoneNoExists = async (req, res) => {
+  try {
+    const { phone_no } = req.body;
+
+    if (!phone_no)
+      return res.status(400).json({ error: "Phone number is required" });
+
+    const [users] = await pool.query(
+      `SELECT * FROM User WHERE phone_no = ?`,
+      [phone_no]
+    );
+
+    if (users.length) {
+      return res.status(200).json({ status: true });
+    } else {
+      return res.status(200).json({ status: false });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+}
