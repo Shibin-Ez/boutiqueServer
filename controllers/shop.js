@@ -125,7 +125,7 @@ export const getShopDetails = async (req, res) => {
       profilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${shops[0].profilePicURL}`,
       postsCount: postsResponse[0].totalPosts,
       followersCount: followersResponse[0].totalFollowers,
-      rating: shopRating,
+      rating: parseFloat(shopRating),
       isFollowing,
     };
 
