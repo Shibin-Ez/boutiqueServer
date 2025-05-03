@@ -99,6 +99,15 @@ export const getShopDetails = async (req, res) => {
       [shopId]
     );
 
+    const [ratingObjList] = await pool.query(`
+      SELECT AVG(c.rating) AS avgRating
+      FROM Comment c
+      LEFT JOIN Post p ON c.postId = p.id
+      WHERE p.shopId = ?`
+    );
+
+    const shopRating = ratingObjList[0].avgRating ? ratingObjList[0].avgRating : 0;
+
     let isFollowing = false;
 
     if (userId && userId != -1) {
@@ -115,6 +124,7 @@ export const getShopDetails = async (req, res) => {
       profilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${shops[0].profilePicURL}`,
       postsCount: postsResponse[0].totalPosts,
       followersCount: followersResponse[0].totalFollowers,
+      rating: shopRating,
       isFollowing,
     };
 
