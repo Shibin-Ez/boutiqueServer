@@ -168,7 +168,7 @@ export const getShopsNearby = async (req, res) => {
     const updatedShops = shops.map((shop) => {
       return {
         ...shop,
-        profilePicURL: `${process.env.SERVER_URL}/public/assets/posts/${shop.profilePicURL}`,
+        profilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${shop.profilePicURL}`,
       };
     });
 
