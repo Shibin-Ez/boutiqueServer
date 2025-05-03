@@ -103,7 +103,8 @@ export const getShopDetails = async (req, res) => {
       SELECT AVG(c.rating) AS avgRating
       FROM Comment c
       LEFT JOIN Post p ON c.postId = p.id
-      WHERE p.shopId = ?`
+      WHERE p.shopId = ?`,
+      [shopId]
     );
 
     const shopRating = ratingObjList[0].avgRating ? ratingObjList[0].avgRating : 0;
