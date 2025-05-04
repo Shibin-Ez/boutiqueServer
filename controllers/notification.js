@@ -165,7 +165,7 @@ export const sendNotificationToTopic = async (
   }
 };
 
-const sendChatNotification = async ({
+export const sendChatNotification = async ({
   senderId,
   receiverId,
   senderName,

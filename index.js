@@ -31,7 +31,7 @@ import { authenticate } from "./middlewares/authMiddleware.js";
 import { getAccessToken } from "./config/notification.js";
 import { getChatHistory, saveMessage } from "./controllers/chat.js";
 import { getUser } from "./controllers/user.js";
-import { sendNotificationToTopic } from "./controllers/notification.js";
+import { sendChatNotification, sendNotificationToTopic } from "./controllers/notification.js";
 
 // CONFIGURATION
 dotenv.config();
