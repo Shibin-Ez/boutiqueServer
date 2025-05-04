@@ -181,10 +181,10 @@ io.on("connection", (socket) => {
 
         // Send push notification
         await sendChatNotification({
-          senderId,
           receiverId,
-          senderName: "Ambadi", // You must provide this from client when emitting "sendMessage"
-          message: "ambili mama.. vaa..",
+          senderName: "Ambaaaadi",
+          message: content,
+          senderId,
           shopId,
         });
       }

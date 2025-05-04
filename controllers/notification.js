@@ -166,17 +166,18 @@ export const sendNotificationToTopic = async (
 };
 
 export const sendChatNotification = async ({
-  senderId,
   receiverId,
   senderName,
   message,
+  senderId,
   shopId,
 }) => {
   const topic = `user_${receiverId}`;
-  const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
+  const roomId = [parseInt(senderId), parseInt(receiverId)].sort().join("_") + `_${shopId}`;
 
   const data = {
     type: "chat",
+    formResponse: "1", // Optional: You can expand this or remove as needed
     channel: topic,
     room_id: roomId,
     senderId: String(senderId),
@@ -184,14 +185,8 @@ export const sendChatNotification = async ({
     shopId: String(shopId),
   };
 
-  const notificationSent = await sendNotificationToTopic(
-    topic,
-    senderName,   // Title (name of sender)
-    message,      // Body (chat message content)
-    data          // Extra metadata for your Flutter app
-  );
-
-  console.log("Push notification sent:", notificationSent);
+  const success = await sendNotificationToTopic(topic, senderName, message, data);
+  console.log("Push notification success:", success);
 };
 
 // CREATE
