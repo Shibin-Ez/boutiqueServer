@@ -165,6 +165,35 @@ export const sendNotificationToTopic = async (
   }
 };
 
+const sendChatNotification = async ({
+  senderId,
+  receiverId,
+  senderName,
+  message,
+  shopId,
+}) => {
+  const topic = `user_${receiverId}`;
+  const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
+
+  const data = {
+    type: "chat",
+    channel: topic,
+    room_id: roomId,
+    senderId: String(senderId),
+    receiverId: String(receiverId),
+    shopId: String(shopId),
+  };
+
+  const notificationSent = await sendNotificationToTopic(
+    topic,
+    senderName,   // Title (name of sender)
+    message,      // Body (chat message content)
+    data          // Extra metadata for your Flutter app
+  );
+
+  console.log("Push notification sent:", notificationSent);
+};
+
 // CREATE
 export const createNotification = async (
   senderShopId,

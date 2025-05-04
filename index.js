@@ -22,7 +22,11 @@ import chatRoutes from "./routes/chat.js";
 import notificationRoutes from "./routes/notification.js";
 import reportRoutes from "./routes/report.js";
 import { createPost } from "./controllers/post.js";
-import { createShop, getShopDetails, getShopDetailsFromUserId } from "./controllers/shop.js";
+import {
+  createShop,
+  getShopDetails,
+  getShopDetailsFromUserId,
+} from "./controllers/shop.js";
 import { authenticate } from "./middlewares/authMiddleware.js";
 import { getAccessToken } from "./config/notification.js";
 import { getChatHistory, saveMessage } from "./controllers/chat.js";
@@ -34,7 +38,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.json({ limit: "220mb" }));
-app.use(express.urlencoded({ limit: '220mb', extended: true }));
+app.use(express.urlencoded({ limit: "220mb", extended: true }));
 app.use(helmet()); // if not used with helmet, cors will not work
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
@@ -106,8 +110,10 @@ app.get("/config/notification", async (req, res) => {
 });
 
 app.get("/mail", async (req, res) => {
-  res.redirect("mailto:botiqstore@gmail.com?subject=Request%20to%20Delete%20My%20Account&body=Hello,%0D%0A%0D%0AI");
-})
+  res.redirect(
+    "mailto:botiqstore@gmail.com?subject=Request%20to%20Delete%20My%20Account&body=Hello,%0D%0A%0D%0AI"
+  );
+});
 
 // ERROR HANDLING (optional but recommended)
 app.use((err, req, res, next) => {
@@ -131,43 +137,59 @@ const activeUsers = new Map(); // Store active users
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
-  socket.on("joinRoom", async ({ senderId, receiverId, shopId, isShop }, callback) => {
-    const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
-    console.log(isShop + " is what getting");
-    socket.join(roomId);
-    console.log(`User joined room: ${roomId}`);
+  socket.on(
+    "joinRoom",
+    async ({ senderId, receiverId, shopId, isShop }, callback) => {
+      const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
+      console.log(isShop + " is what getting");
+      socket.join(roomId);
+      console.log(`User joined room: ${roomId}`);
 
-    if (!isShop) {
-      const shop = await getShopDetailsFromUserId(receiverId);
-      callback(shop);
-    } else {
-      const user = await getUser(receiverId);
-      console.log(user);
-      callback(user);
+      if (!isShop) {
+        const shop = await getShopDetailsFromUserId(receiverId);
+        callback(shop);
+      } else {
+        const user = await getUser(receiverId);
+        console.log(user);
+        callback(user);
+      }
     }
-  });
+  );
 
-  socket.on("sendMessage", async ({ senderId, receiverId, content, shopId }) => {
-    const messageId = await saveMessage(senderId, receiverId, content, shopId);
-    console.log("sending message with shop " + shopId);
-
-    if (messageId) {
-      const message = {
-        id: messageId,
+  socket.on(
+    "sendMessage",
+    async ({ senderId, receiverId, content, shopId }) => {
+      const messageId = await saveMessage(
         senderId,
         receiverId,
         content,
-        timestamp: new Date().toISOString(),
-      };
+        shopId
+      );
+      console.log("sending message with shop " + shopId);
 
-      const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
-      io.to(roomId).emit("receiveMessage", message);
+      if (messageId) {
+        const message = {
+          id: messageId,
+          senderId,
+          receiverId,
+          content,
+          timestamp: new Date().toISOString(),
+        };
 
-      // Notify the receiver
-      const response = await sendNotificationToTopic(`user_11`, "Ambadi", content, {});
-      console.log("Notification response:", response);
+        const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
+        io.to(roomId).emit("receiveMessage", message);
+
+        // Send push notification
+        await sendChatNotification({
+          senderId,
+          receiverId,
+          senderName, // You must provide this from client when emitting "sendMessage"
+          message: content,
+          shopId,
+        });
+      }
     }
-  });
+  );
 
   socket.on("fetchChatHistory", async ({ senderId, receiverId }, callback) => {
     const messages = await getChatHistory(senderId, receiverId);
@@ -176,11 +198,11 @@ io.on("connection", (socket) => {
 
   socket.on("userInactive", ({ userId }) => {
     console.log(userId + " is printing offline");
-  })
+  });
 
   socket.on("userOnline", ({ userId }) => {
     console.log(userId + " is printing online");
-  })
+  });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
