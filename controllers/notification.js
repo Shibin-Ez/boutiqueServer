@@ -140,20 +140,20 @@ export const unsubscribeFromTopics = async (req, res) => {
   }
 };
 
-export const sendNotificationToTopic = async (
-  topic,
-  title,
-  body,
-  data = {}
-) => {
+export const sendNotificationToTopic = async (topic, title, body, data = {}) => {
   try {
+    // Firebase requires data values to be strings
+    const formattedData = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, String(value)])
+    );
+
     const message = {
       notification: {
         title,
         body,
       },
-      data,
-      topic, // Topic name without `/topics/` prefix
+      data: formattedData,
+      topic,
     };
 
     const response = await admin.messaging().send(message);
@@ -167,17 +167,16 @@ export const sendNotificationToTopic = async (
 
 export const sendChatNotification = async ({
   receiverId,
+  senderId,
   senderName,
   message,
-  senderId,
   shopId,
 }) => {
   const topic = `user_${receiverId}`;
   const roomId = [parseInt(senderId), parseInt(receiverId)].sort().join("_") + `_${shopId}`;
 
-  const data = {
+  const messageBody = {
     type: "chat",
-    formResponse: "1", // Optional: You can expand this or remove as needed
     channel: topic,
     room_id: roomId,
     senderId: String(senderId),
@@ -185,9 +184,16 @@ export const sendChatNotification = async ({
     shopId: String(shopId),
   };
 
-  const success = await sendNotificationToTopic(topic, senderName, message, data);
-  console.log("Push notification success:", success);
+  const success = await sendNotificationToTopic(
+    topic,
+    senderName, // Title
+    message,    // Body
+    messageBody // Message payload (aka messageBody in Flutter)
+  );
+
+  console.log("Push notification sent:", success);
 };
+
 
 // CREATE
 export const createNotification = async (
