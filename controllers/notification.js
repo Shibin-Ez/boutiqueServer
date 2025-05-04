@@ -1,6 +1,7 @@
 import pool from "../config/pool.js";
 import admin from "firebase-admin";
 import axios from "axios";
+import { profile } from "console";
 
 // FUNCTIONS
 export const subscribeToTopic = async (token, topic) => {
@@ -142,8 +143,13 @@ export const unsubscribeFromTopics = async (req, res) => {
 
 export const sendNotificationToTopic = async (topic, title, body, data = {}) => {
   try {
+    const fullData = {
+      ...data,
+      profilePicURL: data.profilePicURL || "", // Include default or existing value
+    };
+
     const formattedData = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, String(value)])
+      Object.entries(fullData).map(([key, value]) => [key, String(value)])
     );
 
     const message = {
@@ -195,6 +201,7 @@ export const sendChatNotification = async ({
   senderName,
   message,
   shopId,
+  profilePicURL,
 }) => {
   const topic = `user_${receiverId}`;
   const roomId = [parseInt(senderId), parseInt(receiverId)].sort().join("_") + `_${shopId}`;
@@ -206,6 +213,7 @@ export const sendChatNotification = async ({
     senderId: String(senderId),
     receiverId: String(receiverId),
     shopId: String(shopId),
+    profilePicURL
   };
 
   const success = await sendNotificationToTopic(

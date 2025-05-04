@@ -186,6 +186,7 @@ io.on("connection", (socket) => {
           senderName: "Shaheeeeeem",
           message: content,
           shopId,
+          profilePicURL: "https://fastly.picsum.photos/id/1071/200/300.jpg?hmac=y09-AL4WisOkuQR4SOKzDWjPHWptbCDbEaFP0yJkKNY", // Replace with actual profile picture URL
         });
       }
     }
