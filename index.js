@@ -184,7 +184,7 @@ io.on("connection", (socket) => {
           senderId,
           receiverId,
           senderName: "Ambadi", // You must provide this from client when emitting "sendMessage"
-          message: content,
+          message: "ambili mama.. vaa..",
           shopId,
         });
       }
