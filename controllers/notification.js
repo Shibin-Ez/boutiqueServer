@@ -142,7 +142,6 @@ export const unsubscribeFromTopics = async (req, res) => {
 
 export const sendNotificationToTopic = async (topic, title, body, data = {}) => {
   try {
-    // Firebase requires data values to be strings
     const formattedData = Object.fromEntries(
       Object.entries(data).map(([key, value]) => [key, String(value)])
     );
@@ -154,6 +153,31 @@ export const sendNotificationToTopic = async (topic, title, body, data = {}) => 
       },
       data: formattedData,
       topic,
+
+      // Android-specific settings
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "high_importance_channel",
+        },
+      },
+
+      // iOS (APNs) settings
+      apns: {
+        headers: {
+          "apns-priority": "10",
+        },
+        payload: {
+          aps: {
+            alert: {
+              title,
+              body,
+            },
+            sound: "default",
+            badge: 1,
+          },
+        },
+      },
     };
 
     const response = await admin.messaging().send(message);
