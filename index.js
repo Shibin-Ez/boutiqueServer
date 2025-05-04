@@ -27,6 +27,7 @@ import { authenticate } from "./middlewares/authMiddleware.js";
 import { getAccessToken } from "./config/notification.js";
 import { getChatHistory, saveMessage } from "./controllers/chat.js";
 import { getUser } from "./controllers/user.js";
+import { sendNotificationToTopic } from "./controllers/notification.js";
 
 // CONFIGURATION
 dotenv.config();
@@ -161,6 +162,10 @@ io.on("connection", (socket) => {
 
       const roomId = [senderId, receiverId].sort().join("_") + `_${shopId}`;
       io.to(roomId).emit("receiveMessage", message);
+
+      // Notify the receiver
+      const response = await sendNotificationToTopic(`user_11`, "Ambadi", content, {});
+      console.log("Notification response:", response);
     }
   });
 
