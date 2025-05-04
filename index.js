@@ -183,7 +183,7 @@ io.on("connection", (socket) => {
         await sendChatNotification({
           senderId,
           receiverId,
-          senderName, // You must provide this from client when emitting "sendMessage"
+          senderName: "Ambadi", // You must provide this from client when emitting "sendMessage"
           message: content,
           shopId,
         });
