@@ -8,6 +8,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { Server } from "socket.io";
 import admin from "firebase-admin";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import shopRoutes from "./routes/shop.js";
 import authRoutes from "./routes/auth.js";
@@ -108,6 +110,14 @@ app.get("/config/notification", async (req, res) => {
     res.status(500).json({ error: "Failed to generate token" });
   }
 });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.get("/policy", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "assets", "policy.html"));
+});
+
+
 
 app.get("/mail", async (req, res) => {
   res.redirect(
