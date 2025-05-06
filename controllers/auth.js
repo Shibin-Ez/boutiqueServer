@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 // OTP REGISTER
 export const otpRegister = async (req, res) => {
   try {
-    const { accessToken, phone_no, name, password} = req.body;
+    const { accessToken, phone_no, name, password } = req.body;
     console.log(req.body);
 
     if (!accessToken)
@@ -42,7 +42,10 @@ export const otpRegister = async (req, res) => {
     );
 
     // Generate JWT token
-    const token = jwt.sign({ id: result.insertId, phone_no }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      { id: result.insertId, phone_no },
+      process.env.JWT_SECRET
+    );
     console.log(token);
 
     res.status(200).json({
@@ -65,7 +68,9 @@ export const passwordLogin = async (req, res) => {
     console.log(req.body);
 
     if (!phone_no || !password)
-      return res.status(400).json({ error: "Phone number and password are required" });
+      return res
+        .status(400)
+        .json({ error: "Phone number and password are required" });
 
     const [users] = await pool.query(`SELECT * FROM User WHERE phone_no = ?`, [
       phone_no,
@@ -75,7 +80,10 @@ export const passwordLogin = async (req, res) => {
       return res.status(400).json({ error: "User not found" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, users[0].passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      users[0].passwordHash
+    );
 
     if (!isPasswordValid) {
       return res.status(400).json({ error: "Invalid password" });
@@ -92,7 +100,10 @@ export const passwordLogin = async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: users[0].id, phone_no }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      { id: users[0].id, phone_no },
+      process.env.JWT_SECRET
+    );
     console.log(token);
 
     res.status(200).json({
@@ -168,6 +179,28 @@ export const googleAuth = async (req, res) => {
       email,
       profilePicURL: users[0].profilePicURL,
     });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Authentication failed" });
+  }
+};
+
+// ADMIN LOGIN
+export const adminLogin = async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    if (!password)
+      return res.status(400).json({ error: "Password is required" });
+
+    if (password !== process.env.ADMIN_PASSWORD)
+      return res.status(400).json({ error: "Invalid password" });
+
+    // Generate JWT token
+    const token = jwt.sign({ userId: "admin" }, process.env.JWT_SECRET);
+    console.log(token);
+
+    res.status(200).json({ token });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Authentication failed" });

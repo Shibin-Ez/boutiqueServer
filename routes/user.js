@@ -4,7 +4,11 @@ import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+// CREATE
+router.post("/phone", checkPhoneNoExists);
+
+// READ
 router.get("/user/feed", authenticate, getUserFeed);
-router.get("/phone", checkPhoneNoExists);
+
 
 export default router;
