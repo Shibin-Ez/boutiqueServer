@@ -264,3 +264,21 @@ export const getFile = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+export const getPostsByReports = async (req, res) => {
+  try {
+    const [posts] = await pool.query(
+      `SELECT p.*, s.name AS shopName, COUNT(r.postId) AS reports
+      FROM Post p
+      LEFT JOIN Report r ON p.id = r.postId
+      LEFT JOIN Shop s ON p.shopId = s.id
+      GROUP BY p.id
+      ORDER BY reports DESC`
+    );
+
+    res.status(200).json(posts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+}

@@ -1,5 +1,5 @@
 import express from "express";
-import { getFile, getPost, getPostsFromShop } from "../controllers/post.js";
+import { getFile, getPost, getPostsByReports, getPostsFromShop } from "../controllers/post.js";
 
 const router = express.Router();
 
@@ -7,6 +7,7 @@ const router = express.Router();
 // create post is file with Routs - index.js
 
 // READ
+router.get("/", getPostsByReports);
 router.get("/post/:id", getPost);
 router.get("/shop/:shopId", getPostsFromShop);
 router.get("/file/:filename", getFile);

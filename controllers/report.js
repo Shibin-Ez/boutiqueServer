@@ -29,7 +29,7 @@ export const getReportsForPost = async (req, res) => {
   try {
     const { postId } = req.params;
     const [rows] = await pool.query(`
-      SELECT * FROM Report r
+      SELECT u.name AS reporterName, u.id AS reporterId, r.reason, r.timestamp AS date FROM Report r
       JOIN User u ON r.userId = u.id
       WHERE r.postId = ?`,
       [postId]

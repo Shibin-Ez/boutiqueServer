@@ -183,7 +183,10 @@ INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123
 insert into `Like` (userId, postId) VALUES (2, 4);
 
 --@block
-select * FROM Shop;
+select * FROM Report;
+
+--@block
+INSERT INTO Report (userId, postId, reason) VALUES (9, 19, 'Inappropriate content');
 
 --@block
 UPDATE Shop SET salesmanId = 2 WHERE id > 5;
