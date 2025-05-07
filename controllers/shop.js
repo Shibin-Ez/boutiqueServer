@@ -38,7 +38,7 @@ export const createShop = async (req, res) => {
       );
 
       if (!salesmen.length) {
-        return res.status(400).json({ message: "Invalid salesman code" });
+        return res.status(409).json({ message: "Invalid salesman code" });
       }
 
       salesman = salesmen[0];
@@ -72,7 +72,11 @@ export const createShop = async (req, res) => {
 // READ
 export const getShops = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM Shop");
+    const [rows] = await pool.query(`
+      SELECT s.*, u.name AS username
+      FROM Shop s
+      LEFT JOIN User u ON s.userId = u.id
+      `);
     res.status(200).json(rows);
   } catch (err) {
     console.error(err);
@@ -85,7 +89,10 @@ export const getShopDetails = async (req, res) => {
     const shopId = req.params.id;
     const userId = req.query.userId;
 
-    const [shops] = await pool.query(`SELECT * FROM Shop WHERE id = ?`, [
+    const [shops] = await pool.query(`
+      SELECT s.*, u.name AS username FROM Shop s 
+      LEFT JOIN User u ON s.userId = u.id
+      WHERE s.id = ?`, [
       shopId,
     ]);
 

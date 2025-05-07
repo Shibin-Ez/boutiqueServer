@@ -183,7 +183,7 @@ INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123
 insert into `Like` (userId, postId) VALUES (2, 4);
 
 --@block
-select * FROM Post;
+select * FROM Salesman;
 
 --@block
 DELETE FROM Post;   

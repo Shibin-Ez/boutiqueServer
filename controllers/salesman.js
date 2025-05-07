@@ -1,9 +1,13 @@
-import pool from "../models/pool.js";
+import pool from "../config/pool.js";
 
 // CREATE
 export const createSalesman = async (req, res) => {
   try {
-    const { name, email, phone, code } = req.body;
+    const { name, email, phone_no, code } = req.body;
+
+    if (req.user.userId != "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
 
     // change to to upper case
     const upperCode = code && code.toUpperCase();
@@ -18,8 +22,8 @@ export const createSalesman = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO Salesman (name, email, phone, code) VALUES (?, ?, ?, ?)`,
-      [name, email, phone, upperCode]
+      `INSERT INTO Salesman (name, email, phone_no, code) VALUES (?, ?, ?, ?)`,
+      [name, email, phone_no, upperCode]
     );
     const salesmanId = result.insertId;
 
@@ -29,7 +33,7 @@ export const createSalesman = async (req, res) => {
         id: salesmanId,
         name,
         email,
-        phone,
+        phone: phone_no,
         code: upperCode,
       },
     });
@@ -59,9 +63,13 @@ export const createSalesman = async (req, res) => {
 // READ
 export const getSalesmen = async (req, res) => {
   try {
-    const [salesmen] = await pool.query(`SELECT * FROM Salesman`);
+    const [salesmen] = await pool.query(`
+      SELECT sa.*, sa.phone_no AS phone, sa.code AS salesmanCode, COUNT(sh.id) AS shopsCreated 
+      FROM Salesman sa
+      LEFT JOIN Shop sh ON sa.id = sh.salesmanId
+      GROUP BY sa.id`);
 
-    res.status(200).json(salesmen); 
+    res.status(200).json(salesmen);
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });

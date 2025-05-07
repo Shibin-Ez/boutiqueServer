@@ -23,6 +23,7 @@ import followRoutes from "./routes/follow.js";
 import chatRoutes from "./routes/chat.js";
 import notificationRoutes from "./routes/notification.js";
 import reportRoutes from "./routes/report.js";
+import salesmanRoutes from "./routes/salesman.js";
 import { createPost } from "./controllers/post.js";
 import {
   createShop,
@@ -99,6 +100,7 @@ app.use("/follow", followRoutes);
 app.use("/chat", chatRoutes);
 app.use("/notification", notificationRoutes);
 app.use("/reports", reportRoutes);
+app.use("/salesman", salesmanRoutes);
 
 // CUSTOM ROUTES
 app.get("/config/notification", async (req, res) => {
