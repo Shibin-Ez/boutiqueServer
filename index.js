@@ -24,6 +24,7 @@ import chatRoutes from "./routes/chat.js";
 import notificationRoutes from "./routes/notification.js";
 import reportRoutes from "./routes/report.js";
 import salesmanRoutes from "./routes/salesman.js";
+import adminRoutes from "./routes/admin.js";
 import { createPost } from "./controllers/post.js";
 import {
   createShop,
@@ -34,7 +35,10 @@ import { authenticate } from "./middlewares/authMiddleware.js";
 import { getAccessToken } from "./config/notification.js";
 import { getChatHistory, saveMessage } from "./controllers/chat.js";
 import { getUser } from "./controllers/user.js";
-import { sendChatNotification, sendNotificationToTopic } from "./controllers/notification.js";
+import {
+  sendChatNotification,
+  sendNotificationToTopic,
+} from "./controllers/notification.js";
 
 // CONFIGURATION
 dotenv.config();
@@ -100,7 +104,8 @@ app.use("/follow", followRoutes);
 app.use("/chat", chatRoutes);
 app.use("/notification", notificationRoutes);
 app.use("/reports", reportRoutes);
-app.use("/salesman", salesmanRoutes);
+app.use("/salesmen", salesmanRoutes);
+app.use("/admin", adminRoutes);
 
 // CUSTOM ROUTES
 app.get("/config/notification", async (req, res) => {
@@ -119,11 +124,9 @@ app.get("/policy", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "assets", "policy.html"));
 });
 
-
-
 app.get("/mail", async (req, res) => {
   res.redirect(
-    "mailto:botiqstore@gmail.com?subject=Request%20to%20Delete%20My%20Account&body=Hello,%0D%0A%0D%0AI"
+    "https://mail.google.com/mail/?view=cm&to=sumanthraju606@gmail.com&su=Support%20regarding%20Botiq%20App&body=Hello%2C%0A%0AI%20need%20assistance%20with%20the%20Botiq%20App.%20Please%20help%20me%20with%20the%20following%20issue%3A%0A%0A%5BDescribe%20your%20issue%20here%5D%0A%0AThank%20you"
   );
 });
 
@@ -198,7 +201,8 @@ io.on("connection", (socket) => {
           senderName: "Shaheeeeeem",
           message: content,
           shopId,
-          profilePicURL: "https://fastly.picsum.photos/id/1071/200/300.jpg?hmac=y09-AL4WisOkuQR4SOKzDWjPHWptbCDbEaFP0yJkKNY", // Replace with actual profile picture URL
+          profilePicURL:
+            "https://fastly.picsum.photos/id/1071/200/300.jpg?hmac=y09-AL4WisOkuQR4SOKzDWjPHWptbCDbEaFP0yJkKNY", // Replace with actual profile picture URL
         });
       }
     }

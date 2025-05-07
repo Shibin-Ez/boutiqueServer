@@ -63,6 +63,11 @@ export const createSalesman = async (req, res) => {
 // READ
 export const getSalesmen = async (req, res) => {
   try {
+
+    if (req.user.userId != "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
     const [salesmen] = await pool.query(`
       SELECT sa.*, sa.phone_no AS phone, sa.code AS salesmanCode, COUNT(sh.id) AS shopsCreated 
       FROM Salesman sa
@@ -78,20 +83,34 @@ export const getSalesmen = async (req, res) => {
 
 export const getSalesman = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const salesmanId = req.params.id;
 
-    const [salesman] = await pool.query(
-      `SELECT u.*, s.* FROM User u
-      LEFT JOIN Salesman s ON u.id = s.userId
-      WHERE u.id = ?`,
-      [userId]
+    const [salesmen] = await pool.query(
+      `SELECT * FROM Salesman WHERE id = ?`,
+      [salesmanId]
     );
 
-    if (salesman.length === 0) {
+    if (salesmen.length === 0) {
       return res.status(404).json({ message: "Salesman not found" });
     }
 
-    res.status(200).json(salesman[0]);
+    // find shops created by this salesman
+    const [shops] = await pool.query(
+      `SELECT s.*, COUNT(p.shopId) AS totalPosts FROM Shop s
+      LEFT JOIN Post p ON s.id = p.shopId
+      WHERE s.salesmanId = ?
+      GROUP BY s.id`,
+      [salesmanId]
+    );
+
+    const salesman = {
+      ...salesmen[0],
+      phone: salesmen[0].phone_no,
+      salesmanCode: salesmen[0].code,
+      createdShops: shops,
+    }
+
+    res.status(200).json(salesman);
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: err.message });

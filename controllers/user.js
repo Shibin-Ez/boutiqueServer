@@ -134,10 +134,26 @@ export const getUserFeed = async (req, res) => {
       isLiked: post.isLiked == 1,
       fileTypes: [
         "image",
-        post.fileURL2 ? (post.fileURL2.split(".").pop() === "mp4" ? "video" : "image") : null,
-        post.fileURL3 ? (post.fileURL3.split(".").pop() === "mp4" ? "video" : "image") : null,
-        post.fileURL4 ? (post.fileURL4.split(".").pop() === "mp4" ? "video" : "image") : null,
-        post.fileURL5 ? (post.fileURL5.split(".").pop() === "mp4" ? "video" : "image") : null,
+        post.fileURL2
+          ? post.fileURL2.split(".").pop() === "mp4"
+            ? "video"
+            : "image"
+          : null,
+        post.fileURL3
+          ? post.fileURL3.split(".").pop() === "mp4"
+            ? "video"
+            : "image"
+          : null,
+        post.fileURL4
+          ? post.fileURL4.split(".").pop() === "mp4"
+            ? "video"
+            : "image"
+          : null,
+        post.fileURL5
+          ? post.fileURL5.split(".").pop() === "mp4"
+            ? "video"
+            : "image"
+          : null,
       ],
     }));
 
@@ -175,10 +191,9 @@ export const checkPhoneNoExists = async (req, res) => {
     if (!phone_no)
       return res.status(400).json({ error: "Phone number is required" });
 
-    const [users] = await pool.query(
-      `SELECT * FROM User WHERE phone_no = ?`,
-      [phone_no]
-    );
+    const [users] = await pool.query(`SELECT * FROM User WHERE phone_no = ?`, [
+      phone_no,
+    ]);
 
     if (users.length) {
       return res.status(200).json({ status: true });
@@ -189,4 +204,37 @@ export const checkPhoneNoExists = async (req, res) => {
     console.log(err);
     res.status(500).send(err.message);
   }
-}
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    const [users] = await pool.query(
+      `SELECT id, name, email, phone_no, timestamp AS joinTime FROM User`
+    );
+
+    res.status(200).json(users);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+};
+
+export const getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const [users] = await pool.query(
+      `SELECT id, name, email, phone_no, timestamp AS joinTime FROM User WHERE id = ?`,
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(users[0]);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+};

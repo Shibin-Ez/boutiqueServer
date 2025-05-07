@@ -183,7 +183,10 @@ INSERT INTO User (name, email, phone_no, passwordHash) VALUES ('admin', 'abc@123
 insert into `Like` (userId, postId) VALUES (2, 4);
 
 --@block
-select * FROM Salesman;
+select * FROM Shop;
+
+--@block
+UPDATE Shop SET salesmanId = 2 WHERE id > 5;
 
 --@block
 DELETE FROM Post;   
