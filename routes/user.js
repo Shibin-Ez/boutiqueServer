@@ -9,7 +9,7 @@ router.post("/phone", checkPhoneNoExists);
 
 // READ
 router.get("/", getUsers);
-router.get("/user/:id", getUserById);
+router.get("/user/details/:id", getUserById);
 router.get("/user/feed", authenticate, getUserFeed);
 
 

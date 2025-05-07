@@ -238,3 +238,17 @@ export const getUserById = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+// DELETE
+export const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    await pool.query(`DELETE FROM User WHERE id = ?`, [userId]);
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  } 
+}
