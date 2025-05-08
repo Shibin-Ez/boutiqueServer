@@ -1,5 +1,6 @@
 import express from "express";
-import { createShop, getShopDetails, getShops, getShopsNearby } from "../controllers/shop.js";
+import { createShop, deleteShop, getShopDetails, getShops, getShopsNearby } from "../controllers/shop.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -10,5 +11,8 @@ const router = express.Router();
 router.get("/", getShops);
 router.get("/shop/:id", getShopDetails);
 router.get("/nearby", getShopsNearby);
+
+// DELETE
+router.delete("/shop", authenticate, deleteShop);
 
 export default router;

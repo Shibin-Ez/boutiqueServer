@@ -242,7 +242,12 @@ export const getUserById = async (req, res) => {
 // DELETE
 export const deleteUser = async (req, res) => {
   try {
-    const userId = req.params.id;
+
+    const userId = req.user.id == "admin" ? req.query.id : req.user.id;
+
+    if (req.user.id == -1) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
 
     await pool.query(`DELETE FROM User WHERE id = ?`, [userId]);
 

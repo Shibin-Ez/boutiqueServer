@@ -199,3 +199,33 @@ export const getShopsNearby = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+// DELETE
+export const deleteShop = async (req, res) => {
+  try {
+    const userId = req.user.id == "admin" ? req.query.userId : req.user.id;
+
+    const [shops] = await pool.query(
+      `SELECT * FROM Shop WHERE userId = ?`,
+      [userId]
+    );
+
+    if (!shops.length) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    const shopId = shops[0].id;
+
+    if (!shops.length) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    // Delete the shop
+    await pool.query(`DELETE FROM Shop WHERE id = ?`, [shopId]);
+
+    res.status(200).json({ message: "Shop deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+};

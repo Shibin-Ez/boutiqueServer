@@ -5,7 +5,7 @@ export const createSalesman = async (req, res) => {
   try {
     const { name, email, phone_no, code } = req.body;
 
-    if (req.user.userId != "admin") {
+    if (req.user.id != "admin") {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
@@ -64,7 +64,7 @@ export const createSalesman = async (req, res) => {
 export const getSalesmen = async (req, res) => {
   try {
 
-    if (req.user.userId != "admin") {
+    if (req.user.id != "admin") {
       return res.status(403).json({ message: "Unauthorized" });
     }
 

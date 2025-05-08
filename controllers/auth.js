@@ -1,6 +1,7 @@
 import pool from "../config/pool.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { jwtVerify, importJWK } from 'jose';
 
 // OTP REGISTER
 export const otpRegister = async (req, res) => {
@@ -185,6 +186,88 @@ export const googleAuth = async (req, res) => {
   }
 };
 
+export const appleAuth = async (req, res) => {
+  try {
+    const { idToken, name } = req.body;
+    console.log(req.body);
+    if (!idToken) return res.status(400).json({ error: "Token is required" });
+
+    // Verify token using Apple public keys
+    const appleResponse = await fetch(`https://appleid.apple.com/auth/keys`);
+    const { keys } = await appleResponse.json();
+
+    const jwtHeader = JSON.parse(Buffer.from(idToken.split('.')[0], 'base64').toString());
+    const key = keys.find(k => k.kid === jwtHeader.kid);
+
+    if (!key) {
+      return res.status(400).json({ error: "Invalid Apple token key ID" });
+    }
+
+    // Verify token using jose (you can use jose or apple-signin-auth or similar libs)
+    const { jwtVerify } = await import('jose');
+    const publicKey = await jwtVerify.importJWK({
+      kty: key.kty,
+      kid: key.kid,
+      use: key.use,
+      alg: key.alg,
+      n: key.n,
+      e: key.e,
+    });
+
+    const { payload } = await jwtVerify.jwtVerify(idToken, publicKey);
+
+    const email = payload.email;
+    const isEmailVerified = payload.email_verified === 'true';
+
+    if (!isEmailVerified || !email) {
+      return res.status(400).json({ error: "Email not verified or missing" });
+    }
+
+    let [users] = await pool.query(`SELECT * FROM User WHERE email = ?`, [
+      email,
+    ]);
+
+    if (users.length) {
+      console.log("User exists");
+
+      const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
+        users[0].id,
+      ]);
+
+      if (shops.length) {
+        users[0].shopId = shops[0].id;
+      } else {
+        users[0].shopId = -1;
+      }
+    } else {
+      // Apple doesn't always provide name; use placeholder if missing
+      const finalName = name || "Apple User";
+
+      const [result] = await pool.query(
+        `INSERT INTO User (name, email, profilePicURL) VALUES (?, ?, ?)`,
+        [finalName, email, null] // Apple doesn't provide profile picture
+      );
+
+      users = [{ id: result.insertId, email, name: finalName, shopId: -1, profilePicURL: null }];
+    }
+
+    const token = jwt.sign({ id: users[0].id, email }, process.env.JWT_SECRET);
+
+    res.status(200).json({
+      token,
+      userId: users[0].id,
+      shopId: users[0].shopId,
+      name: users[0].name,
+      email,
+      profilePicURL: users[0].profilePicURL,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Authentication failed" });
+  }
+};
+
+
 // ADMIN LOGIN
 export const adminLogin = async (req, res) => {
   try {
@@ -197,7 +280,7 @@ export const adminLogin = async (req, res) => {
       return res.status(400).json({ error: "Invalid password" });
 
     // Generate JWT token
-    const token = jwt.sign({ userId: "admin" }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: "admin" }, process.env.JWT_SECRET);
     console.log(token);
 
     res.status(200).json({ token });
