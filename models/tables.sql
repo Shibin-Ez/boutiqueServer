@@ -137,8 +137,8 @@ CREATE TABLE ShopNotification (
 
     INDEX idx_shopNotification_receiverShopId (receiverShopId),
 
-    FOREIGN KEY (senderId) REFERENCES Shop(id),
-    FOREIGN KEY (receiverShopId) REFERENCES User(id) ON DELETE CASCADE
+    FOREIGN KEY (senderId) REFERENCES User(id),
+    FOREIGN KEY (receiverShopId) REFERENCES Shop(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 --@block Create ShortURL table
