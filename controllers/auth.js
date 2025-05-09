@@ -2,6 +2,7 @@ import pool from "../config/pool.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { jwtVerify, importJWK } from 'jose';
+import jwksClient from "jwks-rsa";
 
 // OTP REGISTER
 export const otpRegister = async (req, res) => {
@@ -186,84 +187,61 @@ export const googleAuth = async (req, res) => {
   }
 };
 
+// Set up the JWKS client to fetch Apple's public keys
+const client = jwksClient({
+  jwksUri: "https://appleid.apple.com/auth/keys",
+});
+
+// Helper to get signing key
+function getAppleSigningKey(kid) {
+  return new Promise((resolve, reject) => {
+    client.getSigningKey(kid, (err, key) => {
+      if (err) return reject(err);
+      const signingKey = key.getPublicKey();
+      resolve(signingKey);
+    });
+  });
+}
+
+// Apple Auth handler
 export const appleAuth = async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ error: "Missing idToken" });
+  }
+
   try {
-    const { idToken, name } = req.body;
-    console.log(req.body);
-    if (!idToken) return res.status(400).json({ error: "Token is required" });
+    // Decode header to get kid
+    const decodedHeader = jwt.decode(idToken, { complete: true });
+    const kid = decodedHeader.header.kid;
 
-    // Verify token using Apple public keys
-    const appleResponse = await fetch(`https://appleid.apple.com/auth/keys`);
-    const { keys } = await appleResponse.json();
+    // Fetch Apple's public key for this kid
+    const publicKey = await getAppleSigningKey(kid);
 
-    const jwtHeader = JSON.parse(Buffer.from(idToken.split('.')[0], 'base64').toString());
-    const key = keys.find(k => k.kid === jwtHeader.kid);
-
-    if (!key) {
-      return res.status(400).json({ error: "Invalid Apple token key ID" });
-    }
-
-    // Verify token using jose (you can use jose or apple-signin-auth or similar libs)
-    const { jwtVerify } = await import('jose');
-    const publicKey = await jwtVerify.importJWK({
-      kty: key.kty,
-      kid: key.kid,
-      use: key.use,
-      alg: key.alg,
-      n: key.n,
-      e: key.e,
+    // Verify token
+    const payload = jwt.verify(idToken, publicKey, {
+      algorithms: ["RS256"],
+      issuer: "https://appleid.apple.com",
+      // Replace with your actual Apple Service ID or client_id
+      audience: "com.botiq.app.sumanth", // or whatever your bundle ID is
     });
 
-    const { payload } = await jwtVerify.jwtVerify(idToken, publicKey);
+    // At this point, token is verified — extract user info
+    const { email, sub } = payload;
 
-    const email = payload.email;
-    const isEmailVerified = payload.email_verified === 'true';
+    // Find or create user in DB here...
 
-    if (!isEmailVerified || !email) {
-      return res.status(400).json({ error: "Email not verified or missing" });
-    }
-
-    let [users] = await pool.query(`SELECT * FROM User WHERE email = ?`, [
-      email,
-    ]);
-
-    if (users.length) {
-      console.log("User exists");
-
-      const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
-        users[0].id,
-      ]);
-
-      if (shops.length) {
-        users[0].shopId = shops[0].id;
-      } else {
-        users[0].shopId = -1;
-      }
-    } else {
-      // Apple doesn't always provide name; use placeholder if missing
-      const finalName = name || "Apple User";
-
-      const [result] = await pool.query(
-        `INSERT INTO User (name, email, profilePicURL) VALUES (?, ?, ?)`,
-        [finalName, email, null] // Apple doesn't provide profile picture
-      );
-
-      users = [{ id: result.insertId, email, name: finalName, shopId: -1, profilePicURL: null }];
-    }
-
-    const token = jwt.sign({ id: users[0].id, email }, process.env.JWT_SECRET);
-
-    res.status(200).json({
-      token,
-      userId: users[0].id,
-      shopId: users[0].shopId,
-      name: users[0].name,
-      email,
-      profilePicURL: users[0].profilePicURL,
+    return res.status(200).json({
+      success: true,
+      user: {
+        appleId: sub,
+        email,
+      },
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Authentication failed" });
+    console.error("Apple auth failed:", err);
+    return res.status(401).json({ error: "Invalid or expired Apple token" });
   }
 };
 
