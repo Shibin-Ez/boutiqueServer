@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { jwtVerify, importJWK } from 'jose';
 import jwksClient from "jwks-rsa";
+import { profile } from "console";
 
 // OTP REGISTER
 export const otpRegister = async (req, res) => {
@@ -205,7 +206,8 @@ function getAppleSigningKey(kid) {
 
 // Apple Auth handler
 export const appleAuth = async (req, res) => {
-  const { idToken } = req.body;
+  const { idToken, name } = req.body;
+  console.log(req.body);
 
   if (!idToken) {
     return res.status(400).json({ error: "Missing idToken" });
@@ -228,16 +230,49 @@ export const appleAuth = async (req, res) => {
     });
 
     // At this point, token is verified — extract user info
-    const { email, sub } = payload;
+    const { email, sub } = payload; // sub means subject, which is the unique identifier for the user
+    console.log("Apple user: ", payload);
 
-    // Find or create user in DB here...
+    let [users] = await pool.query(`SELECT * FROM User WHERE email = ?`, [
+      email,
+    ]);    
 
-    return res.status(200).json({
-      success: true,
-      user: {
-        appleId: sub,
-        email,
-      },
+    if (users.length) {
+      // User exists
+      console.log("User exists");
+
+      // check if he is a seller
+      const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
+        users[0].id,
+      ]);
+
+      if (shops.length) {
+        users[0].shopId = shops[0].id;
+      } else {
+        users[0].shopId = -1;
+      }
+    } else {
+      // Create user
+      const [result] = await pool.query(
+        `INSERT INTO User (name, email) VALUES (?, ?)`,
+        [name, email]
+      );
+
+      users = [{ id: result.insertId, email, name, shopId: -1 }];
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: users[0].id, email }, process.env.JWT_SECRET);
+
+    console.log(token);
+
+    res.status(200).json({
+      token,
+      userId: users[0].id,
+      shopId: users[0].shopId,
+      name,
+      email,
+      profilePicURL: null,
     });
   } catch (err) {
     console.error("Apple auth failed:", err);
