@@ -158,14 +158,18 @@ io.on("connection", (socket) => {
       socket.join(roomId);
       console.log(`User joined room: ${roomId}`);
 
-      activeUsers.set(senderId, { socketId: socket.id, receiverId });
-
       if (!isShop) {
         const shop = await getShopDetailsFromUserId(receiverId);
         callback(shop);
       } else {
         const user = await getUser(receiverId);
         console.log(user);
+        activeUsers.set(senderId, {
+          socketId: socket.id,
+          receiverId,
+          senderName: user.name,
+          senderURL: user.profilePicURL,
+        });
         callback(user);
       }
     }
@@ -199,11 +203,10 @@ io.on("connection", (socket) => {
           await sendChatNotification({
             receiverId,
             senderId,
-            senderName: "Shaheeeeeem",
+            senderName: activeUsers.get(senderId)?.senderName,
             message: content,
             shopId,
-            profilePicURL:
-              "https://fastly.picsum.photos/id/1071/200/300.jpg?hmac=y09-AL4WisOkuQR4SOKzDWjPHWptbCDbEaFP0yJkKNY", // Replace with actual profile picture URL
+            profilePicURL: activeUsers.get(senderId)?.senderURL,
           });
         }
       }
@@ -256,7 +259,7 @@ const getOnlineUsers = () => {
   console.log("Online Users:");
   activeUsers.forEach((user, userId) => {
     console.log(
-      `User ID: ${userId}, Socket ID: ${user.socketId}, receiverId: ${user.receiverId}`
+      `User ID: ${userId}, Socket ID: ${user.socketId}, receiverId: ${user.receiverId}, sender: ${user.senderName}`
     );
     console.log("--------------------------------------------------");
   });
@@ -270,7 +273,7 @@ process.stdin.on("data", (input) => {
   if (command === "online") {
     getOnlineUsers();
   } else {
-    console.log(`Unknown command: ${command}`);
+    console.log(`Unknown command: ${command}, please type "online"`);
   }
 });
 
