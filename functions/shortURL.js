@@ -8,7 +8,7 @@ const shortURL = (req, res) => {
     const url = req.params[0];
     console.log(url);
 
-    // example incoming url: "https://shop.pmkinventories.tech/share/post/:id"
+    // example incoming url: "https://server.com/share/post/:id"
     // here, url will be "post/:id"
 
     res.redirect(`botiq://shop.app/${url}`);

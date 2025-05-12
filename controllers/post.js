@@ -265,6 +265,42 @@ export const getFile = async (req, res) => {
   }
 };
 
+export const getThumbnail = async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const { userId, postId } = req.query;
+
+    // Check if user already reported the post
+    if (userId && postId) {
+      const [rows] = await pool.query(
+        `SELECT * FROM Report WHERE userId = ? AND postId = ?`,
+        [userId, postId]
+      );
+
+      if (rows.length) {
+        return res.status(403).send("User has reported the post");
+      }
+    }
+
+    // Construct absolute path using __dirname
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const newFilename = filename.replace(/\.\w+$/, ".jpg");
+    const filePath = path.join(__dirname, '..', 'public', 'assets', 'posts', 'thumbnails', newFilename);
+    console.log(filePath);
+
+    // Check if the file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send("File not found");
+    }
+
+    res.sendFile(filePath);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+};
+
 export const getPostsByReports = async (req, res) => {
   try {
     const [posts] = await pool.query(
@@ -277,6 +313,39 @@ export const getPostsByReports = async (req, res) => {
     );
 
     res.status(200).json(posts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+}
+
+
+// DELETE
+export const deletePost = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).send("Unauthorized");
+    }
+
+    if (req.user.id != "admin") {
+      return res.status(403).send("Forbidden");
+    }
+
+    const postId = req.params.id;
+
+    // Check if the post exists
+    const [posts] = await pool.query(`SELECT * FROM Post WHERE id = ?`, [
+      postId,
+    ]);
+
+    if (!posts.length) {
+      return res.status(404).send("Post not found");
+    }
+
+    // Delete the post
+    await pool.query(`DELETE FROM Post WHERE id = ?`, [postId]);
+
+    res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);

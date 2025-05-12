@@ -1,5 +1,5 @@
 import express from "express";
-import { getFile, getPost, getPostsByReports, getPostsFromShop } from "../controllers/post.js";
+import { getFile, getPost, getPostsByReports, getPostsFromShop, getThumbnail } from "../controllers/post.js";
 
 const router = express.Router();
 
@@ -11,5 +11,6 @@ router.get("/", getPostsByReports);
 router.get("/post/:id", getPost);
 router.get("/shop/:shopId", getPostsFromShop);
 router.get("/file/:filename", getFile);
+router.get("/thumbnail/:filename", getThumbnail);
 
 export default router;
