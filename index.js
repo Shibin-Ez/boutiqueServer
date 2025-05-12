@@ -208,6 +208,8 @@ io.on("connection", (socket) => {
 
         // Send push notification
         if (activeUsers.get(receiverId)?.receiverId != receiverId) {
+          console.log("sending notification to " + receiverId);
+          console.log(activeUsers.get(receiverId)?.receiverId);
           await sendChatNotification({
             receiverId,
             senderId,
@@ -284,11 +286,6 @@ process.stdin.on("data", (input) => {
     console.log(`Unknown command: ${command}, please type "online"`);
   }
 });
-
-// Example function to call
-function showFunction() {
-  console.log('You triggered the "show" function!');
-}
 
 // START SERVER
 server.listen(PORT, "::", () =>
