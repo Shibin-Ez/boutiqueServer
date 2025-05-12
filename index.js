@@ -128,7 +128,6 @@ app.get("/support", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "support", "support.html"));
 });
 
-
 // ERROR HANDLING (optional but recommended)
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -158,6 +157,8 @@ io.on("connection", (socket) => {
       console.log(isShop + " is what getting");
       socket.join(roomId);
       console.log(`User joined room: ${roomId}`);
+
+      activeUsers.set(senderId, { socketId: socket.id, receiverId });
 
       if (!isShop) {
         const shop = await getShopDetailsFromUserId(receiverId);
@@ -194,15 +195,17 @@ io.on("connection", (socket) => {
         io.to(roomId).emit("receiveMessage", message);
 
         // Send push notification
-        await sendChatNotification({
-          receiverId,
-          senderId,
-          senderName: "Shaheeeeeem",
-          message: content,
-          shopId,
-          profilePicURL:
-            "https://fastly.picsum.photos/id/1071/200/300.jpg?hmac=y09-AL4WisOkuQR4SOKzDWjPHWptbCDbEaFP0yJkKNY", // Replace with actual profile picture URL
-        });
+        if (activeUsers.get(receiverId)?.receiverId != receiverId) {
+          await sendChatNotification({
+            receiverId,
+            senderId,
+            senderName: "Shaheeeeeem",
+            message: content,
+            shopId,
+            profilePicURL:
+              "https://fastly.picsum.photos/id/1071/200/300.jpg?hmac=y09-AL4WisOkuQR4SOKzDWjPHWptbCDbEaFP0yJkKNY", // Replace with actual profile picture URL
+          });
+        }
       }
     }
   );
@@ -214,14 +217,29 @@ io.on("connection", (socket) => {
 
   socket.on("userInactive", ({ userId }) => {
     console.log(userId + " is printing offline");
+    activeUsers.set(userId, {
+      socketId: socket.id,
+      receiverId: activeUsers.get(userId).receiverId * -1,
+    });
   });
 
   socket.on("userOnline", ({ userId }) => {
     console.log(userId + " is printing online");
+    activeUsers.set(userId, {
+      socketId: socket.id,
+      receiverId: activeUsers.get(userId).receiverId * -1,
+    });
   });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
+    for (const [userId, user] of activeUsers.entries()) {
+      if (user.socketId === socket.id) {
+        activeUsers.delete(userId);
+        console.log("User removed from active users:", userId);
+        break;
+      }
+    }
   });
 });
 
@@ -230,6 +248,32 @@ const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
+
+// Commandline Input
+const getOnlineUsers = () => {
+  console.log("Online Users:");
+  activeUsers.forEach((user, userId) => {
+    console.log(`User ID: ${userId}, Socket ID: ${user.socketId}`);
+  });
+}
+
+// Enable stdin reading
+process.stdin.setEncoding('utf-8');
+process.stdin.on('data', (input) => {
+  const command = input.trim();
+
+  if (command === 'online') {
+    getOnlineUsers();
+  } else {
+    console.log(`Unknown command: ${command}`);
+  }
+});
+
+// Example function to call
+function showFunction() {
+  console.log('You triggered the "show" function!');
+}
+
 
 // START SERVER
 server.listen(PORT, "::", () =>
