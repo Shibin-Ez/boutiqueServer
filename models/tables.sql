@@ -266,3 +266,16 @@ WHERE p.shopId IN (
         FROM Follow f
         WHERE f.userId = 35
     ) && p.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY);
+
+SELECT
+    p.title,
+    s.id AS senderId,
+    s.name AS senderName,
+    s.profilePicURL AS senderProfilePicURL
+    FROM Post p
+    JOIN Shop s ON p.shopId = s.id
+    WHERE p.shopId IN (
+        SELECT f.shopId
+        FROM Follow f
+        WHERE f.userId = 35
+    ) && p.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY);
