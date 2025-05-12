@@ -207,8 +207,8 @@ io.on("connection", (socket) => {
         io.to(roomId).emit("receiveMessage", message);
 
         // Send push notification
-        if (activeUsers.get(receiverId)?.receiverId != receiverId) {
-          console.log("sending notification to " + receiverId);
+        if (activeUsers.get(receiverId)?.receiverId != senderId) {
+          console.log("sending notification to " + senderId);
           console.log(activeUsers.get(receiverId)?.receiverId);
           await sendChatNotification({
             receiverId,
