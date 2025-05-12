@@ -161,6 +161,7 @@ io.on("connection", (socket) => {
       if (!isShop) {
         const shop = await getShopDetailsFromUserId(receiverId);
         const sender = await getUser(senderId);
+        console.log("sender: ", sender);
         activeUsers.set(senderId, {
           socketId: socket.id,
           receiverId,
