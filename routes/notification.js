@@ -1,5 +1,5 @@
 import express from "express"
-import { createNotification, getUserNotifications, subscribeToTopics, unsubscribeFromTopics } from "../controllers/notification.js";
+import { createNotification, getNotifications, getUserNotifications, subscribeToTopics, unsubscribeFromTopics } from "../controllers/notification.js";
 
 const router = express.Router();
 
@@ -8,6 +8,6 @@ router.post("/subscribe/user/:userId", subscribeToTopics);
 router.post("/unsubscribe/user/:userId", unsubscribeFromTopics);
 
 // READ
-router.get("/user", getUserNotifications);
+router.get("/user", getNotifications);
 
 export default router;

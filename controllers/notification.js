@@ -141,7 +141,12 @@ export const unsubscribeFromTopics = async (req, res) => {
   }
 };
 
-export const sendNotificationToTopic = async (topic, title, body, data = {}) => {
+export const sendNotificationToTopic = async (
+  topic,
+  title,
+  body,
+  data = {}
+) => {
   try {
     const fullData = {
       ...data,
@@ -204,7 +209,8 @@ export const sendChatNotification = async ({
   profilePicURL,
 }) => {
   const topic = `user_${receiverId}`;
-  const roomId = [parseInt(senderId), parseInt(receiverId)].sort().join("_") + `_${shopId}`;
+  const roomId =
+    [parseInt(senderId), parseInt(receiverId)].sort().join("_") + `_${shopId}`;
 
   const messageBody = {
     type: "chat",
@@ -213,19 +219,18 @@ export const sendChatNotification = async ({
     senderId: String(senderId),
     receiverId: String(receiverId),
     shopId: String(shopId),
-    profilePicURL
+    profilePicURL,
   };
 
   const success = await sendNotificationToTopic(
     topic,
     senderName, // Title
-    message,    // Body
+    message, // Body
     messageBody // Message payload (aka messageBody in Flutter)
   );
 
   console.log("Push notification sent:", success);
 };
-
 
 // CREATE
 export const createNotification = async (
@@ -301,6 +306,44 @@ export const getShopNotifications = async (req, res) => {
     `,
       [process.env.SERVER_URL, shopId]
     );
+
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+};
+
+export const getNotifications = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+
+    const [posts] = await pool.query(
+      `
+      SELECT
+        p.title,
+        s.id AS senderId,
+        s.name AS senderName,
+        s.profilePicURL AS senderProfilePicURL,
+      FROM Post p
+        JOIN Shop s ON p.shopId = s.id
+      WHERE p.shopId IN (
+          SELECT f.shopId
+          FROM Follow f
+          WHERE f.userId = ?
+        ) && p.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY);
+      `,
+      [userId]
+    );
+
+    const notifications = posts.map((post) => {
+      return {
+        senderId: post.shopId,
+        senderName: post.shopName,
+        senderProfilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${post.profilePicURL}`,
+        content: `New post ${post.title} from ${post.shopName}`,
+      }
+    })
 
     res.status(200).json(notifications);
   } catch (err) {
