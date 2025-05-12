@@ -161,7 +161,6 @@ io.on("connection", (socket) => {
       if (!isShop) {
         const shop = await getShopDetailsFromUserId(receiverId);
         const sender = await getUser(senderId);
-        console.log("sender: ", sender);
         activeUsers.set(senderId, {
           socketId: socket.id,
           receiverId,
@@ -230,7 +229,7 @@ io.on("connection", (socket) => {
   socket.on("userInactive", ({ userId }) => {
     console.log(userId + " is printing offline");
     activeUsers.set(userId, {
-      socketId: socket.id,
+      ...activeUsers.get(userId),
       receiverId: activeUsers.get(userId)?.receiverId * -1,
     });
   });
@@ -238,7 +237,7 @@ io.on("connection", (socket) => {
   socket.on("userOnline", ({ userId }) => {
     console.log(userId + " is printing online");
     activeUsers.set(userId, {
-      socketId: socket.id,
+      ...activeUsers.get(userId),
       receiverId: Math.abs(activeUsers.get(userId)?.receiverId),
     });
   });
