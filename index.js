@@ -227,7 +227,7 @@ io.on("connection", (socket) => {
     console.log(userId + " is printing online");
     activeUsers.set(userId, {
       socketId: socket.id,
-      receiverId: activeUsers.get(userId)?.receiverId * -1,
+      receiverId: Math.abs(activeUsers.get(userId)?.receiverId),
     });
   });
 
@@ -255,17 +255,19 @@ const getOnlineUsers = () => {
   console.log("Active Users Count:", activeUsers.size);
   console.log("Online Users:");
   activeUsers.forEach((user, userId) => {
-    console.log(`User ID: ${userId}, Socket ID: ${user.socketId}, receiverId: ${user.receiverId}`);
-  console.log("--------------------------------------------------");
+    console.log(
+      `User ID: ${userId}, Socket ID: ${user.socketId}, receiverId: ${user.receiverId}`
+    );
+    console.log("--------------------------------------------------");
   });
-}
+};
 
 // Enable stdin reading
-process.stdin.setEncoding('utf-8');
-process.stdin.on('data', (input) => {
+process.stdin.setEncoding("utf-8");
+process.stdin.on("data", (input) => {
   const command = input.trim();
 
-  if (command === 'online') {
+  if (command === "online") {
     getOnlineUsers();
   } else {
     console.log(`Unknown command: ${command}`);
@@ -276,7 +278,6 @@ process.stdin.on('data', (input) => {
 function showFunction() {
   console.log('You triggered the "show" function!');
 }
-
 
 // START SERVER
 server.listen(PORT, "::", () =>
