@@ -322,9 +322,9 @@ export const getNotifications = async (req, res) => {
       `
       SELECT
         p.title,
-        s.id AS senderId,
-        s.name AS senderName,
-        s.profilePicURL AS senderProfilePicURL
+        s.id AS shopId,
+        s.name AS shopName,
+        s.profilePicURL
       FROM Post p
         JOIN Shop s ON p.shopId = s.id
       WHERE p.shopId IN (
@@ -341,7 +341,7 @@ export const getNotifications = async (req, res) => {
         senderId: post.shopId,
         senderName: post.shopName,
         senderProfilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${post.profilePicURL}`,
-        content: `New post ${post.title} from ${post.shopName}`,
+        content: `New post "${post.title}" from ${post.shopName}`,
       }
     })
 
