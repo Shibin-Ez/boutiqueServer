@@ -219,7 +219,7 @@ io.on("connection", (socket) => {
     console.log(userId + " is printing offline");
     activeUsers.set(userId, {
       socketId: socket.id,
-      receiverId: activeUsers.get(userId).receiverId * -1,
+      receiverId: activeUsers.get(userId)?.receiverId * -1,
     });
   });
 
@@ -227,7 +227,7 @@ io.on("connection", (socket) => {
     console.log(userId + " is printing online");
     activeUsers.set(userId, {
       socketId: socket.id,
-      receiverId: activeUsers.get(userId).receiverId * -1,
+      receiverId: activeUsers.get(userId)?.receiverId * -1,
     });
   });
 
@@ -251,9 +251,12 @@ admin.initializeApp({
 
 // Commandline Input
 const getOnlineUsers = () => {
+  console.log("--------------------------------------------------");
+  console.log("Active Users Count:", activeUsers.size);
   console.log("Online Users:");
   activeUsers.forEach((user, userId) => {
-    console.log(`User ID: ${userId}, Socket ID: ${user.socketId}`);
+    console.log(`User ID: ${userId}, Socket ID: ${user.socketId}, receiverId: ${user.receiverId}`);
+  console.log("--------------------------------------------------");
   });
 }
 
