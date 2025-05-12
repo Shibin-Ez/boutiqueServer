@@ -160,15 +160,23 @@ io.on("connection", (socket) => {
 
       if (!isShop) {
         const shop = await getShopDetailsFromUserId(receiverId);
+        const sender = await getUser(senderId);
+        activeUsers.set(senderId, {
+          socketId: socket.id,
+          receiverId,
+          senderName: sender.name,
+          senderURL: sender.profilePicURL,
+        });
         callback(shop);
       } else {
         const user = await getUser(receiverId);
         console.log(user);
+        const shop = await getShopDetailsFromUserId(senderId);
         activeUsers.set(senderId, {
           socketId: socket.id,
           receiverId,
-          senderName: user.name,
-          senderURL: user.profilePicURL,
+          senderName: shop.name,
+          senderURL: shop.profilePicURL,
         });
         callback(user);
       }
