@@ -318,6 +318,7 @@ export const getNotifications = async (req, res) => {
   try {
     const userId = req.query.userId;
 
+    // Post notifications
     const [posts] = await pool.query(
       `
       SELECT
@@ -330,10 +331,10 @@ export const getNotifications = async (req, res) => {
       FROM Post p
         JOIN Shop s ON p.shopId = s.id
       WHERE p.shopId IN (
-          SELECT f.shopId
-          FROM Follow f
-          WHERE f.userId = ?
-        ) && p.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY);
+        SELECT f.shopId
+        FROM Follow f
+        WHERE f.userId = ?
+      ) && p.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY);
       `,
       [userId]
     );
@@ -347,8 +348,42 @@ export const getNotifications = async (req, res) => {
         senderProfilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${post.profilePicURL}`,
         content: `New post "${post.title}" from ${post.shopName}`,
         timestamp: post.timestamp,
+      };
+    });
+
+    // check if user owns a shop
+    const [shops] = await pool.query(`SELECT id FROM Shop WHERE userId = ?`, [
+      userId,
+    ]);
+
+    if (shops.length) {
+      // Follow notifications
+      const shopId = shops[0].id;
+      const [followers] = await pool.query(
+        `
+        SELECT 
+          f.userId,
+          u.name AS userName,
+          u.profilePicURL,
+          f.timestamp
+        FROM Follow f
+          JOIN User u ON f.userId = u.id 
+        WHERE f.shopId = ? && f.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY);`,
+        [shopId]
+      );
+
+      // pushing to notifications
+      for (const follower of followers) {
+        notifications.push({
+          type: "follow",
+          senderId: follower.userId,
+          senderName: follower.userName,
+          senderProfilePicURL: `${follower.profilePicURL}`,
+          content: `${follower.userName} has started following you`,
+          timestamp: follower.timestamp,
+        });
       }
-    })
+    }
 
     res.status(200).json(notifications);
   } catch (err) {
