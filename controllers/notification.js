@@ -325,8 +325,8 @@ export const getNotifications = async (req, res) => {
         p.title,
         s.id AS shopId,
         s.name AS shopName,
-        s.profilePicURL
-        p.timestamp,
+        s.profilePicURL,
+        p.timestamp
       FROM Post p
         JOIN Shop s ON p.shopId = s.id
       WHERE p.shopId IN (
