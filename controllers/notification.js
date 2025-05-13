@@ -321,10 +321,12 @@ export const getNotifications = async (req, res) => {
     const [posts] = await pool.query(
       `
       SELECT
+        p.id AS postId,
         p.title,
         s.id AS shopId,
         s.name AS shopName,
         s.profilePicURL
+        p.timestamp,
       FROM Post p
         JOIN Shop s ON p.shopId = s.id
       WHERE p.shopId IN (
@@ -338,10 +340,13 @@ export const getNotifications = async (req, res) => {
 
     const notifications = posts.map((post) => {
       return {
+        type: "post",
+        postId: post.postId,
         senderId: post.shopId,
         senderName: post.shopName,
         senderProfilePicURL: `${process.env.SERVER_URL}/public/assets/shops/${post.profilePicURL}`,
         content: `New post "${post.title}" from ${post.shopName}`,
+        timestamp: post.timestamp,
       }
     })
 
