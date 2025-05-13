@@ -385,6 +385,11 @@ export const getNotifications = async (req, res) => {
       }
     }
 
+    // Sort notifications by timestamp
+    notifications.sort((a, b) => {
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+
     res.status(200).json(notifications);
   } catch (err) {
     console.log(err);
