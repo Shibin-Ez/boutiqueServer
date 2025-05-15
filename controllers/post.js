@@ -375,8 +375,8 @@ export const deletePost = async (req, res) => {
 
       // find the shop associated with the post
       const [shops] = await pool.query(
-        `SELECT * FROM Post WHERE id = ?`,
-        [postId]
+        `SELECT * FROM Shop WHERE id = ?`,
+        [req.user.id]
       );
       if (!shops.length) {
         return res.status(404).send("Post not found");
