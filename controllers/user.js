@@ -256,7 +256,7 @@ export const verifyUser = async (req, res) => {
 
     // check if user owns a shop
     const [shops] = await pool.query(
-      `SELECT id, name, type, profilePicURL FROM Shop WHERE ownerId = ?`,
+      `SELECT id, name, type, profilePicURL FROM Shop WHERE userId = ?`,
       [userId]
     );
 
