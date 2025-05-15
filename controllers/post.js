@@ -391,8 +391,6 @@ export const deletePost = async (req, res) => {
       if (!posts.length) {
         return res.status(403).send("Forbidden");
       }
-
-      return res.status(403).send("Forbidden");
     }
 
     // Check if the post exists
