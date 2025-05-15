@@ -1,5 +1,5 @@
 import express from "express";
-import { getFile, getPost, getPostsByReports, getPostsFromShop, getThumbnail } from "../controllers/post.js";
+import { deletePost, getFile, getPost, getPostsByReports, getPostsFromShop, getThumbnail } from "../controllers/post.js";
 
 const router = express.Router();
 
@@ -12,5 +12,8 @@ router.get("/post/:id", getPost);
 router.get("/shop/:shopId", getPostsFromShop);
 router.get("/file/:filename", getFile);
 router.get("/thumbnail/:filename", getThumbnail);
+
+// DELETE
+router.delete("/post/:id", deletePost);
 
 export default router;
