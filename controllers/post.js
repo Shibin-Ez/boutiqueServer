@@ -35,10 +35,18 @@ export const createPost = async (req, res) => {
     console.log(req.files);
 
     const file1 = req.files.mainFile[0];
-    const file2 = req.files.additionalFiles1 ? req.files.additionalFiles1[0] : null;
-    const file3 = req.files.additionalFiles2 ? req.files.additionalFiles2[0] : null;
-    const file4 = req.files.additionalFiles3 ? req.files.additionalFiles3[0] : null;
-    const file5 = req.files.additionalFiles4 ? req.files.additionalFiles4[0] : null;
+    const file2 = req.files.additionalFiles1
+      ? req.files.additionalFiles1[0]
+      : null;
+    const file3 = req.files.additionalFiles2
+      ? req.files.additionalFiles2[0]
+      : null;
+    const file4 = req.files.additionalFiles3
+      ? req.files.additionalFiles3[0]
+      : null;
+    const file5 = req.files.additionalFiles4
+      ? req.files.additionalFiles4[0]
+      : null;
 
     // check if user is the owner of the shop
     const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
@@ -54,7 +62,6 @@ export const createPost = async (req, res) => {
     const files = [file1, file2, file3, file4, file5];
     console.log(files);
     for (const file of files) {
-
       if (!file) continue;
 
       const type = await fileTypeFromFile(file.path);
@@ -101,7 +108,8 @@ export const getPost = async (req, res) => {
 
     const userId = req.query.userId;
 
-    const [posts] = await pool.query(`
+    const [posts] = await pool.query(
+      `
       SELECT 
         p.*,
         JSON_OBJECT(
@@ -114,9 +122,9 @@ export const getPost = async (req, res) => {
       FROM Post p
       LEFT JOIN Shop s ON p.shopId = s.id
       LEFT JOIN User u ON s.userId = u.id
-      WHERE p.id = ?`, [
-      postId,
-    ]);
+      WHERE p.id = ?`,
+      [postId]
+    );
 
     if (!posts.length) {
       return res.status(404).send("post not found");
@@ -125,9 +133,12 @@ export const getPost = async (req, res) => {
     let isLiked = false;
 
     if (userId && userId != -1) {
-      const [rows] = await pool.query(`
+      const [rows] = await pool.query(
+        `
         SELECT * FROM \`Like\` WHERE userId = ? AND postId = ?  
-      `, [userId, postId])
+      `,
+        [userId, postId]
+      );
 
       if (rows.length) isLiked = true;
     }
@@ -137,18 +148,34 @@ export const getPost = async (req, res) => {
     const updatedPost = {
       ...post,
       fileURL1: `${process.env.SERVER_URL}/posts/file/${post.fileURL1}`,
-      fileURL2: post.fileURL2 && `${process.env.SERVER_URL}/posts/file/${post.fileURL2}`,
-      fileURL3: post.fileURL3 && `${process.env.SERVER_URL}/posts/file/${post.fileURL3}`,
-      fileURL4: post.fileURL4 && `${process.env.SERVER_URL}/posts/file/${post.fileURL4}`,
-      fileURL5: post.fileURL5 && `${process.env.SERVER_URL}/posts/file/${post.fileURL5}`,
+      fileURL2:
+        post.fileURL2 &&
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL2}`,
+      fileURL3:
+        post.fileURL3 &&
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL3}`,
+      fileURL4:
+        post.fileURL4 &&
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL4}`,
+      fileURL5:
+        post.fileURL5 &&
+        `${process.env.SERVER_URL}/posts/file/${post.fileURL5}`,
       isLiked,
       fileTypes: [
         "image",
-        post.fileURL2 && post.fileURL2.split(".").pop() === "mp4" ? "video" : "image",
-        post.fileURL3 && post.fileURL3.split(".").pop() === "mp4" ? "video" : "image",
-        post.fileURL4 && post.fileURL4.split(".").pop() === "mp4" ? "video" : "image",
-        post.fileURL5 && post.fileURL5.split(".").pop() === "mp4" ? "video" : "image",
-      ]
+        post.fileURL2 && post.fileURL2.split(".").pop() === "mp4"
+          ? "video"
+          : "image",
+        post.fileURL3 && post.fileURL3.split(".").pop() === "mp4"
+          ? "video"
+          : "image",
+        post.fileURL4 && post.fileURL4.split(".").pop() === "mp4"
+          ? "video"
+          : "image",
+        post.fileURL5 && post.fileURL5.split(".").pop() === "mp4"
+          ? "video"
+          : "image",
+      ],
     };
 
     res.status(200).json(updatedPost);
@@ -162,15 +189,16 @@ export const getPostsFromShop = async (req, res) => {
   try {
     const { shopId } = req.params;
     const { userId } = req.query || -1;
-    
-    const [posts] = await pool.query(`
+
+    const [posts] = await pool.query(
+      `
       SELECT * FROM Post p
       WHERE p.shopId = ?
         AND NOT EXISTS (
           SELECT 1 FROM Report r WHERE r.userId = ? AND r.postId = p.id
-        )`, [
-      shopId, userId
-    ]);
+        )`,
+      [shopId, userId]
+    );
 
     const updatedPosts = await Promise.all(
       posts.map(async (post) => {
@@ -250,7 +278,14 @@ export const getFile = async (req, res) => {
     // Construct absolute path using __dirname
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const filePath = path.join(__dirname, '..', 'public', 'assets', 'posts', filename);
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "public",
+      "assets",
+      "posts",
+      filename
+    );
     console.log(filePath);
 
     // Check if the file exists
@@ -286,7 +321,15 @@ export const getThumbnail = async (req, res) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const newFilename = filename.replace(/\.\w+$/, ".jpg");
-    const filePath = path.join(__dirname, '..', 'public', 'assets', 'posts', 'thumbnails', newFilename);
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "public",
+      "assets",
+      "posts",
+      "thumbnails",
+      newFilename
+    );
     console.log(filePath);
 
     // Check if the file exists
@@ -317,8 +360,7 @@ export const getPostsByReports = async (req, res) => {
     console.error(err);
     res.status(500).send(err.message);
   }
-}
-
+};
 
 // DELETE
 export const deletePost = async (req, res) => {
@@ -327,11 +369,31 @@ export const deletePost = async (req, res) => {
       return res.status(401).send("Unauthorized");
     }
 
+    const postId = req.params.id;
+
     if (req.user.id != "admin") {
+
+      // find the shop associated with the post
+      const [shops] = await pool.query(
+        `SELECT * FROM Post WHERE id = ?`,
+        [postId]
+      );
+      if (!shops.length) {
+        return res.status(404).send("Post not found");
+      }
+
+      // check if the requested user's shop owns the post
+      const [posts] = await pool.query(
+        `SELECT * FROM Post WHERE id = ? AND shopId = ?`,
+        [postId, shops[0].id]
+      );
+
+      if (!posts.length) {
+        return res.status(403).send("Forbidden");
+      }
+
       return res.status(403).send("Forbidden");
     }
-
-    const postId = req.params.id;
 
     // Check if the post exists
     const [posts] = await pool.query(`SELECT * FROM Post WHERE id = ?`, [
@@ -345,9 +407,50 @@ export const deletePost = async (req, res) => {
     // Delete the post
     await pool.query(`DELETE FROM Post WHERE id = ?`, [postId]);
 
+    // Delete the associated files
+    const fileURLs = [
+      posts[0].fileURL1,
+      posts[0].fileURL2,
+      posts[0].fileURL3,
+      posts[0].fileURL4,
+      posts[0].fileURL5,
+    ];
+
+    for (const fileURL of fileURLs) {
+      if (fileURL) {
+        const filePath = path.join(
+          __dirname,
+          "..",
+          "public",
+          "assets",
+          "posts",
+          fileURL
+        );
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      // check if video, delete thumbnail
+      if (fileURL && (fileURL.endsWith(".mp4") || fileURL.endsWith(".mov"))) {
+        const thumbnailPath = path.join(
+          __dirname,
+          "..",
+          "public",
+          "assets",
+          "posts",
+          "thumbnails",
+          fileURL.replace(/\.\w+$/, ".jpg")
+        );
+        if (fs.existsSync(thumbnailPath)) {
+          fs.unlinkSync(thumbnailPath);
+        }
+      }
+    }
+
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
   }
-}
+};
