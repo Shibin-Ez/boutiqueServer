@@ -414,6 +414,9 @@ export const deletePost = async (req, res) => {
       posts[0].fileURL5,
     ];
 
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
     for (const fileURL of fileURLs) {
       if (fileURL) {
         const filePath = path.join(
