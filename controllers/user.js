@@ -239,6 +239,38 @@ export const getUserById = async (req, res) => {
   }
 };
 
+export const verifyUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [users] = await pool.query(
+      `SELECT id, name, email, phone_no, timestamp AS joinTime FROM User WHERE id = ?`,
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    users[0].shopId = -1; // default value
+
+    // check if user owns a shop
+    const [shops] = await pool.query(
+      `SELECT id, name, type, profilePicURL FROM Shop WHERE ownerId = ?`,
+      [userId]
+    );
+
+    if (shops.length > 0) {
+      users[0].shopId = shops[0].id;
+    }
+
+    res.status(200).json(users[0]);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+}
+
 // DELETE
 export const deleteUser = async (req, res) => {
   try {
