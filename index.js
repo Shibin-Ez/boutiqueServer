@@ -128,6 +128,11 @@ app.get("/support", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "support", "support.html"));
 });
 
+app.get("/.well-known/assetlinks.json", async (req, res) => {
+  const assetlinks = JSON.parse(process.env.ASSET_LINKS);
+  res.status(200).json(assetlinks);
+})
+
 // ERROR HANDLING (optional but recommended)
 app.use((err, req, res, next) => {
   console.error(err.stack);
