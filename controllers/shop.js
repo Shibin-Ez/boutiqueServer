@@ -229,3 +229,57 @@ export const deleteShop = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+//UPDATE
+export const updateShop = async (req,res) => {
+  try {
+    const userId = req.user.id;
+    const shopId = req.params.shopId;
+    console.log(userId);
+    console.log(req.body);
+
+    // // authorize
+    // const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
+    //   userId,
+    // ]);
+
+    // if (shops.length) {
+    //   return res.status(400).json({ message: "User already has a shop" });
+    // }
+
+    const {
+      name,
+      type,
+      address,
+      whatsapp_no,
+    } = req.body;
+
+    console.log(req.file);
+    const profilePicURL = req.file ? req.file.filename : null;
+
+    let sql = `UPDATE Shop SET 
+      name = ?,
+      type = ?,
+      address = ?,
+      whatsapp_no = ?`;
+    
+    let params = [name,type,address,whatsapp_no];
+
+    if(profilePicURL){
+      sql += ', profilePicURL = ?';
+      params.push(profilePicURL);
+    }
+
+    sql += ' WHERE id = ?';
+    params.push(shopId);
+    
+    await pool.query(sql, params);
+
+    res.status(201).json({
+      message: "shop updated successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+}

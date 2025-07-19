@@ -8,11 +8,36 @@
       "previewLimit": 50,
       "server": "localhost",
       "port": 3306,
-      "driver": "MySQL",
-      "name": "botiqueDB",
+      "driver": "MariaDB",
+      "name": "localhost",
+      "database": "test",
+      "username": "root"
+    },
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3306,
+      "driver": "MariaDB",
+      "name": "localhost",
+      "database": "test2",
+      "username": "root"
+    },
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3306,
+      "driver": "MariaDB",
+      "name": "botiq",
       "database": "botiqueDB",
-      "username": "root",
-      "password": "20140000"
+      "username": "root"
     }
   ],
   "workbench.colorCustomizations": {
