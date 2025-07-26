@@ -238,14 +238,14 @@ export const updateShop = async (req,res) => {
     console.log(userId);
     console.log(req.body);
 
-    // // authorize
-    // const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
-    //   userId,
-    // ]);
+    // chek if shop exist
+    const [shops] = await pool.query(`SELECT * FROM Shop WHERE id = ? AND userId = ?`, [
+      shopId,userId
+    ]);
 
-    // if (shops.length) {
-    //   return res.status(400).json({ message: "User already has a shop" });
-    // }
+    if (shops.length == 0) {
+      return res.status(400).json({ message: "Shop doesnt exist" });
+    }
 
     const {
       name,

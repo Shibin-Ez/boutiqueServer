@@ -15,7 +15,10 @@ const generateThumbnail = (videoPath, thumbnailPath) => {
         folder: path.dirname(thumbnailPath),
         size: "320x240",
       })
-      .on("end", () => resolve(thumbnailPath))
+      .on("end", () => {
+        // Resolve the promise with the path without the extension
+        resolve(thumbnailPath);
+      })
       .on("error", reject);
   });
 };
@@ -162,7 +165,9 @@ export const getPost = async (req, res) => {
         `${process.env.SERVER_URL}/posts/file/${post.fileURL5}`,
       isLiked,
       fileTypes: [
-        "image",
+        post.fileURL1 && post.fileURL1.split(".").pop() === "mp4"
+          ? "video"
+          : "image",
         post.fileURL2 && post.fileURL2.split(".").pop() === "mp4"
           ? "video"
           : "image",
@@ -336,7 +341,6 @@ export const getThumbnail = async (req, res) => {
     if (!fs.existsSync(filePath)) {
       return res.status(404).send("File not found");
     }
-
     res.sendFile(filePath);
   } catch (err) {
     console.error(err);
