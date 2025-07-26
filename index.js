@@ -25,11 +25,12 @@ import notificationRoutes from "./routes/notification.js";
 import reportRoutes from "./routes/report.js";
 import salesmanRoutes from "./routes/salesman.js";
 import adminRoutes from "./routes/admin.js";
-import { createPost } from "./controllers/post.js";
+import { createPost, updatePost } from "./controllers/post.js";
 import {
   createShop,
   getShopDetails,
   getShopDetailsFromUserId,
+  updateShop
 } from "./controllers/shop.js";
 import { authenticate } from "./middlewares/authMiddleware.js";
 import { getAccessToken } from "./config/notification.js";
@@ -76,8 +77,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ROUTES WITH FILES
+//------------ROUTES WITH FILES------------------
 app.post("/shops", authenticate, upload.single("profilePic"), createShop);
+app.post("/shops/update/:shopId", authenticate, upload.single("profilePic"), updateShop);
 app.post(
   "/posts",
   authenticate,
@@ -89,6 +91,20 @@ app.post(
     { name: "additionalFiles4", maxCount: 1 },
   ]),
   createPost
+);
+
+//UPDATE POST
+app.post(
+  "/posts/update/:postId",
+  authenticate,
+  upload.fields([
+    { name: "mainFile", maxCount: 1 },
+    { name: "additionalFiles1", maxCount: 1 },
+    { name: "additionalFiles2", maxCount: 1 },
+    { name: "additionalFiles3", maxCount: 1 },
+    { name: "additionalFiles4", maxCount: 1 },
+  ]),
+  updatePost
 );
 
 // ROUTES

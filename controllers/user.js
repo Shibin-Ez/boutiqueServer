@@ -133,7 +133,9 @@ export const getUserFeed = async (req, res) => {
         `${process.env.SERVER_URL}/posts/file/${post.fileURL5}`,
       isLiked: post.isLiked == 1,
       fileTypes: [
-        "image",
+        post.fileURL1.split(".").pop() === "mp4"
+            ? "video"
+            : "image",
         post.fileURL2
           ? post.fileURL2.split(".").pop() === "mp4"
             ? "video"

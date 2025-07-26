@@ -15,7 +15,10 @@ const generateThumbnail = (videoPath, thumbnailPath) => {
         folder: path.dirname(thumbnailPath),
         size: "320x240",
       })
-      .on("end", () => resolve(thumbnailPath))
+      .on("end", () => {
+        // Resolve the promise with the path without the extension
+        resolve(thumbnailPath);
+      })
       .on("error", reject);
   });
 };
@@ -162,7 +165,9 @@ export const getPost = async (req, res) => {
         `${process.env.SERVER_URL}/posts/file/${post.fileURL5}`,
       isLiked,
       fileTypes: [
-        "image",
+        post.fileURL1 && post.fileURL1.split(".").pop() === "mp4"
+          ? "video"
+          : "image",
         post.fileURL2 && post.fileURL2.split(".").pop() === "mp4"
           ? "video"
           : "image",
@@ -336,7 +341,6 @@ export const getThumbnail = async (req, res) => {
     if (!fs.existsSync(filePath)) {
       return res.status(404).send("File not found");
     }
-
     res.sendFile(filePath);
   } catch (err) {
     console.error(err);
@@ -455,3 +459,93 @@ export const deletePost = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+//UPDATE
+export const updatePost = async (req,res) => {
+  try{
+  const userId = req.user.id;
+  const postId = req.params.postId;
+  const {title,price,discount_price,description,shopId} = req.body;
+
+  const file1 = req.files.mainFile ? req.files.mainFile[0] : null;
+    const file2 = req.files.additionalFiles1
+      ? req.files.additionalFiles1[0]
+      : null;
+    const file3 = req.files.additionalFiles2
+      ? req.files.additionalFiles2[0]
+      : null;
+    const file4 = req.files.additionalFiles3
+      ? req.files.additionalFiles3[0]
+      : null;
+    const file5 = req.files.additionalFiles4
+      ? req.files.additionalFiles4[0]
+      : null;
+
+      //check user have shop or not
+      const [shops] = await pool.query(`SELECT * FROM Shop WHERE userId = ?`, [
+      userId,
+    ]);
+
+    if (!shops.length) {
+      console.log("User does not have a shop");
+      return res.status(400).json({ message: "User does not have a shop" });
+    }
+
+    const files = [file1, file2, file3, file4, file5];
+    console.log(files);
+    for (const file of files) {
+      if (!file) continue;
+
+      const type = await fileTypeFromFile(file.path);
+      if (type.mime.startsWith("image/")) {
+        await compressImage(file.path);
+      } else if (type.mime.startsWith("video/")) {
+        await compressVideo(file.path);
+      } else {
+        return res.status(400).send("Unsupported file type.");
+      }
+    }
+
+    //update the post accordingly
+    let sql = `UPDATE Post SET 
+      title = ?, 
+      price = ?, 
+      discount_price = ?, 
+      description = ?, 
+      shopId = ?`;
+    let params = [title, price, discount_price, description, shopId];
+
+    if (file1) {
+      sql += `, fileURL1 = ?`;
+      params.push(file1.filename);
+    }
+    if (file2) {
+      sql += `, fileURL2 = ?`;
+      params.push(file2.filename);
+    }
+    if (file3) {
+      sql += `, fileURL3 = ?`;
+      params.push(file3.filename);
+    }
+    if (file4) {
+      sql += `, fileURL4 = ?`;
+      params.push(file4.filename);
+    }
+    if (file5) {
+      sql += `, fileURL5 = ?`;
+      params.push(file5.filename);
+    }
+
+    sql += ` WHERE id = ?`;
+    params.push(postId);
+
+    // Now run the query
+    await pool.query(sql, params);
+    res
+      .status(201)
+      .json({message: `post added successfully` });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send(err.message);
+    }
+  }
