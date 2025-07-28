@@ -50,23 +50,35 @@ export const getUserLikes = async (req, res) => {
       ORDER BY l.timestamp DESC`,
       [userId]
     );
+    console.log(likes);
 
-    const updatedLikes = likes.map((like) => ({
-      ...like,
-      fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL1}`,
-      fileURL2:
-        like.fileURL2 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL2}`,
-      fileURL3:
-        like.fileURL3 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL3}`,
-      fileURL4:
-        like.fileURL4 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL4}`,
-      fileURL5:
-        like.fileURL5 &&
-        `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL5}`,
-    }));
+    const videoExtensions = ['.mp4', '.mov', '.webm', '.avi', '.mkv'];
+
+    const updatedLikes = likes.map((like) => {
+      // 1. Check if fileURL1 exists and ends with a video extension
+      const hasVideo =
+        like.fileURL1 && // Ensure fileURL1 is not null/undefined
+        videoExtensions.some((ext) => like.fileURL1.toLowerCase().endsWith(ext));
+
+      // 2. Return the new object
+      return {
+        ...like,
+        isVideo: hasVideo, // Add the boolean flag here
+        fileURL1: `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL1}`,
+        fileURL2:
+          like.fileURL2 &&
+          `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL2}`,
+        fileURL3:
+          like.fileURL3 &&
+          `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL3}`,
+        fileURL4:
+          like.fileURL4 &&
+          `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL4}`,
+        fileURL5:
+          like.fileURL5 &&
+          `${process.env.SERVER_URL}/public/assets/posts/${like.fileURL5}`,
+      };
+    });
 
     res.status(200).json(updatedLikes);
   } catch (err) {
