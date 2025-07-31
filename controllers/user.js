@@ -162,6 +162,7 @@ export const getUserFeed = async (req, res) => {
     res.status(200).json(updatedPosts);
   } catch (err) {
     console.log(err);
+    console.log("hello");
     res.status(500).send(err.message);
   }
 };
@@ -258,7 +259,7 @@ export const verifyUser = async (req, res) => {
 
     // check if user owns a shop
     const [shops] = await pool.query(
-      `SELECT id, name, type, profilePicURL FROM Shop WHERE userId = ?`,
+      `SELECT id as userId, name, type, profilePicURL FROM Shop WHERE userId = ?`,
       [userId]
     );
 
