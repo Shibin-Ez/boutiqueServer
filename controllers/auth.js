@@ -123,6 +123,76 @@ export const passwordLogin = async (req, res) => {
   }
 };
 
+// RESET PASSWORD
+
+export const resetPassword = async (req,res) => {
+  const {accessToken,phone_no,password} = req.body;
+
+
+  if (!phone_no || !password)
+      return res
+        .status(400)
+        .json({ error: "Phone number and password are required" });
+
+  const [check1] = await pool.query(`SELECT * FROM User WHERE phone_no = ?`,[phone_no]);
+
+  if (!check1.length) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+  if (!accessToken)
+    return res.status(400).json({ error: "Token is required" });
+
+  const response = await fetch(
+    "https://control.msg91.com/api/v5/widget/verifyAccessToken",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        authkey: process.env.MSG91_AUTH_KEY,
+        "access-token": accessToken,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.log("Invalid token");
+    return res.status(400).json({ error: "Invalid token" });
+  }
+
+  const encryptedPassword = await bcrypt.hash(password, 10);
+
+  const [result] = await pool.query(`UPDATE User SET passwordHash = ? WHERE phone_no = ?`,[encryptedPassword,phone_no]);
+
+  const [userResult] = await pool.query('SELECT id,name,phone_no,profilePicURL FROM User WHERE phone_no = ?',[phone_no]);
+
+  const token = jwt.sign(
+    { id: userResult[0].id, phone_no },
+    process.env.JWT_SECRET
+  );
+  const [shopResult] = await pool.query('SELECT id FROM Shop WHERE id = ?', [userResult[0].id]);
+
+  const user = userResult[0];
+
+  const responseData = {
+      token,
+      userId: user.id,
+      name: user.name,
+      phone_no: user.phone_no,
+      profilePicURL: user.profilePicURL,
+      shopId: shopResult && shopResult.length > 0 ? shopResult[0].id : -1,
+  };
+  console.log(responseData);
+
+  res.status(200).json(responseData);
+
+}
+
 // SOCIAL LOGIN
 export const googleAuth = async (req, res) => {
   try {
